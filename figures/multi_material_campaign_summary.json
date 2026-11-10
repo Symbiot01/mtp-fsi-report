@@ -1,0 +1,703 @@
+{
+  "workspace": "/home/dev/MTP/sim_workspaces/ff76b74f-70aa-4e38-aa57-81d5cbc0ab2b",
+  "n_cases_requested": 15,
+  "n_cases_ok": 15,
+  "wall_s": 3806.5,
+  "materials": [
+    "tpu_85a",
+    "tpu_95a",
+    "nylon_pa12_wet",
+    "nylon_pa12_dry",
+    "petg_carbon",
+    "pla_standard"
+  ],
+  "speeds_m_s": [
+    0.5,
+    1.2,
+    2.0,
+    3.0
+  ],
+  "figures": [
+    "/home/dev/MTP/sim_workspaces/ff76b74f-70aa-4e38-aa57-81d5cbc0ab2b/figures/fig_material_rom_vs_industrial.png",
+    "/home/dev/MTP/sim_workspaces/ff76b74f-70aa-4e38-aa57-81d5cbc0ab2b/figures/fig_material_relative_errors.png",
+    "/home/dev/MTP/sim_workspaces/ff76b74f-70aa-4e38-aa57-81d5cbc0ab2b/figures/fig_speed_sweep_rom_vs_industrial.png",
+    "/home/dev/MTP/sim_workspaces/ff76b74f-70aa-4e38-aa57-81d5cbc0ab2b/figures/fig_washout_cl_cd.png"
+  ],
+  "rows": [
+    {
+      "slug": "tpu_85a_U1p20",
+      "material_id": "tpu_85a",
+      "flow_speed_m_s": 1.2,
+      "reynolds_number": 119521.9123505976,
+      "mass_ratio_mu": 0.0647881707072731,
+      "bending_rigidity_kb": 0.2087640322748644,
+      "cauchy_number_cy": 4.790097169053397,
+      "e_eff_mpa": 11.4,
+      "rom": {
+        "wall_s": 0.505,
+        "cl": 0.5605,
+        "cd": 0.0325,
+        "tip_mm": 4.792,
+        "vm_mpa": 0.119,
+        "lift_to_drag": 17.246
+      },
+      "industrial": {
+        "cl_rigid": 0.9301,
+        "cd_rigid": 0.114,
+        "cl_deformed": 0.4709,
+        "cd_deformed": 0.0219,
+        "tip_mm": 3.8379999999999996,
+        "vm_mpa": 0.101,
+        "cells": 15979,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 122077.9,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.1903,
+        "cd_rom_vs_of_deformed": 0.484,
+        "tip_rom_vs_ccx": 0.2486,
+        "vm_rom_vs_ccx": 0.1782,
+        "washout_cl_drop": 0.4592,
+        "washout_cd_drop": 0.0921
+      }
+    },
+    {
+      "slug": "tpu_95a_U1p20",
+      "material_id": "tpu_95a",
+      "flow_speed_m_s": 1.2,
+      "reynolds_number": 119521.9123505976,
+      "mass_ratio_mu": 0.06643532758966138,
+      "bending_rigidity_kb": 0.48915749621668264,
+      "cauchy_number_cy": 2.0443313405893893,
+      "e_eff_mpa": 26.88,
+      "rom": {
+        "wall_s": 0.517,
+        "cl": 0.6878,
+        "cd": 0.043,
+        "tip_mm": 2.531,
+        "vm_mpa": 0.148,
+        "lift_to_drag": 15.995
+      },
+      "industrial": {
+        "cl_rigid": 0.9301,
+        "cd_rigid": 0.114,
+        "cl_deformed": 0.6393,
+        "cd_deformed": 0.0306,
+        "tip_mm": 2.231,
+        "vm_mpa": 0.136,
+        "cells": 16085,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 140688.6,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.0759,
+        "cd_rom_vs_of_deformed": 0.4052,
+        "tip_rom_vs_ccx": 0.1345,
+        "vm_rom_vs_ccx": 0.0882,
+        "washout_cl_drop": 0.2908,
+        "washout_cd_drop": 0.0834
+      }
+    },
+    {
+      "slug": "nylon_pa12_wet_U1p20",
+      "material_id": "nylon_pa12_wet",
+      "flow_speed_m_s": 1.2,
+      "reynolds_number": 119521.9123505976,
+      "mass_ratio_mu": 0.057101438589461026,
+      "bending_rigidity_kb": 11.994944763719301,
+      "cauchy_number_cy": 0.08336845393608362,
+      "e_eff_mpa": 712.5,
+      "rom": {
+        "wall_s": 0.505,
+        "cl": 0.8254,
+        "cd": 0.0567,
+        "tip_mm": 0.124,
+        "vm_mpa": 0.183,
+        "lift_to_drag": 14.557
+      },
+      "industrial": {
+        "cl_rigid": 0.9301,
+        "cd_rigid": 0.114,
+        "cl_deformed": 0.8407,
+        "cd_deformed": 0.0624,
+        "tip_mm": 0.127,
+        "vm_mpa": 0.186,
+        "cells": 15789,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 146199.5,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.0182,
+        "cd_rom_vs_of_deformed": 0.0913,
+        "tip_rom_vs_ccx": 0.0236,
+        "vm_rom_vs_ccx": 0.0161,
+        "washout_cl_drop": 0.0894,
+        "washout_cd_drop": 0.0516
+      }
+    },
+    {
+      "slug": "nylon_pa12_dry_U1p20",
+      "material_id": "nylon_pa12_dry",
+      "flow_speed_m_s": 1.2,
+      "reynolds_number": 119521.9123505976,
+      "mass_ratio_mu": 0.05600333400120216,
+      "bending_rigidity_kb": 25.890916390687337,
+      "cauchy_number_cy": 0.03862358461594231,
+      "e_eff_mpa": 1567.5,
+      "rom": {
+        "wall_s": 0.503,
+        "cl": 0.8292,
+        "cd": 0.0571,
+        "tip_mm": 0.058,
+        "vm_mpa": 0.184,
+        "lift_to_drag": 14.522
+      },
+      "industrial": {
+        "cl_rigid": 0.9301,
+        "cd_rigid": 0.114,
+        "cl_deformed": 0.8518,
+        "cd_deformed": 0.0616,
+        "tip_mm": 0.061,
+        "vm_mpa": 0.193,
+        "cells": 15764,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 153625.7,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.0265,
+        "cd_rom_vs_of_deformed": 0.0731,
+        "tip_rom_vs_ccx": 0.0492,
+        "vm_rom_vs_ccx": 0.0466,
+        "washout_cl_drop": 0.0783,
+        "washout_cd_drop": 0.0524
+      }
+    },
+    {
+      "slug": "petg_carbon_U1p20",
+      "material_id": "petg_carbon",
+      "flow_speed_m_s": 1.2,
+      "reynolds_number": 119521.9123505976,
+      "mass_ratio_mu": 0.06972964135443799,
+      "bending_rigidity_kb": 32.03100311948368,
+      "cauchy_number_cy": 0.031219752821032457,
+      "e_eff_mpa": 1974.0,
+      "rom": {
+        "wall_s": 0.503,
+        "cl": 0.8298,
+        "cd": 0.0572,
+        "tip_mm": 0.047,
+        "vm_mpa": 0.184,
+        "lift_to_drag": 14.507
+      },
+      "industrial": {
+        "cl_rigid": 0.9301,
+        "cd_rigid": 0.114,
+        "cl_deformed": 0.8548,
+        "cd_deformed": 0.0622,
+        "tip_mm": 0.05,
+        "vm_mpa": 0.197,
+        "cells": 15818,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 156317.6,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.0292,
+        "cd_rom_vs_of_deformed": 0.0804,
+        "tip_rom_vs_ccx": 0.06,
+        "vm_rom_vs_ccx": 0.066,
+        "washout_cl_drop": 0.0753,
+        "washout_cd_drop": 0.0518
+      }
+    },
+    {
+      "slug": "pla_standard_U1p20",
+      "material_id": "pla_standard",
+      "flow_speed_m_s": 1.2,
+      "reynolds_number": 119521.9123505976,
+      "mass_ratio_mu": 0.06808248447204969,
+      "bending_rigidity_kb": 47.760794422267765,
+      "cauchy_number_cy": 0.02093767518100086,
+      "e_eff_mpa": 2992.5,
+      "rom": {
+        "wall_s": 0.501,
+        "cl": 0.8307,
+        "cd": 0.0573,
+        "tip_mm": 0.031,
+        "vm_mpa": 0.184,
+        "lift_to_drag": 14.497
+      },
+      "industrial": {
+        "cl_rigid": 0.9301,
+        "cd_rigid": 0.114,
+        "cl_deformed": 0.8589,
+        "cd_deformed": 0.068,
+        "tip_mm": 0.034,
+        "vm_mpa": 0.2,
+        "cells": 16038,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 151417.7,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.0328,
+        "cd_rom_vs_of_deformed": 0.1574,
+        "tip_rom_vs_ccx": 0.0882,
+        "vm_rom_vs_ccx": 0.08,
+        "washout_cl_drop": 0.0712,
+        "washout_cd_drop": 0.046
+      }
+    },
+    {
+      "slug": "tpu_85a_U0p50",
+      "material_id": "tpu_85a",
+      "flow_speed_m_s": 0.5,
+      "reynolds_number": 49800.796812749,
+      "mass_ratio_mu": 0.0647881707072731,
+      "bending_rigidity_kb": 1.202480825903219,
+      "cauchy_number_cy": 0.8316140918495482,
+      "e_eff_mpa": 11.4,
+      "rom": {
+        "wall_s": 0.228,
+        "cl": 0.7594,
+        "cd": 0.0541,
+        "tip_mm": 1.131,
+        "vm_mpa": 0.032,
+        "lift_to_drag": 14.037
+      },
+      "industrial": {
+        "cl_rigid": 0.7661,
+        "cd_rigid": 0.068,
+        "cl_deformed": 0.6771,
+        "cd_deformed": 0.0459,
+        "tip_mm": 0.958,
+        "vm_mpa": 0.025,
+        "cells": 15850,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 64940.2,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.1215,
+        "cd_rom_vs_of_deformed": 0.1786,
+        "tip_rom_vs_ccx": 0.1806,
+        "vm_rom_vs_ccx": 0.28,
+        "washout_cl_drop": 0.089,
+        "washout_cd_drop": 0.0221
+      }
+    },
+    {
+      "slug": "tpu_85a_U2p00",
+      "material_id": "tpu_85a",
+      "flow_speed_m_s": 2.0,
+      "reynolds_number": 199203.187250996,
+      "mass_ratio_mu": 0.0647881707072731,
+      "bending_rigidity_kb": 0.07515505161895118,
+      "cauchy_number_cy": 13.30582546959277,
+      "e_eff_mpa": 11.4,
+      "rom": {
+        "wall_s": 0.512,
+        "cl": 0.3696,
+        "cd": 0.0199,
+        "tip_mm": 8.527,
+        "vm_mpa": 0.219,
+        "lift_to_drag": 18.573
+      },
+      "industrial": {
+        "cl_rigid": 0.4435,
+        "cd_rigid": 0.0865,
+        "cl_deformed": 0.1758,
+        "cd_deformed": 0.0134,
+        "tip_mm": 3.98,
+        "vm_mpa": 0.104,
+        "cells": 15841,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 157719.7,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 1.1024,
+        "cd_rom_vs_of_deformed": 0.4851,
+        "tip_rom_vs_ccx": 1.1425,
+        "vm_rom_vs_ccx": 1.1058,
+        "washout_cl_drop": 0.2677,
+        "washout_cd_drop": 0.0731
+      }
+    },
+    {
+      "slug": "tpu_85a_U3p00",
+      "material_id": "tpu_85a",
+      "flow_speed_m_s": 3.0,
+      "reynolds_number": 298804.7808764941,
+      "mass_ratio_mu": 0.0647881707072731,
+      "bending_rigidity_kb": 0.0334022451639783,
+      "cauchy_number_cy": 29.938107306583735,
+      "e_eff_mpa": 11.4,
+      "rom": {
+        "wall_s": 0.553,
+        "cl": 0.2522,
+        "cd": 0.0145,
+        "tip_mm": 12.776,
+        "vm_mpa": 0.44,
+        "lift_to_drag": 17.393
+      },
+      "industrial": {
+        "cl_rigid": 0.6952,
+        "cd_rigid": 0.0596,
+        "cl_deformed": -0.1809,
+        "cd_deformed": 0.0098,
+        "tip_mm": 9.203,
+        "vm_mpa": 0.241,
+        "cells": 16039,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 216220.0,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 2.3941,
+        "cd_rom_vs_of_deformed": 0.4796,
+        "tip_rom_vs_ccx": 0.3882,
+        "vm_rom_vs_ccx": 0.8257,
+        "washout_cl_drop": 0.8761,
+        "washout_cd_drop": 0.0498
+      }
+    },
+    {
+      "slug": "tpu_95a_U0p50",
+      "material_id": "tpu_95a",
+      "flow_speed_m_s": 0.5,
+      "reynolds_number": 49800.796812749,
+      "mass_ratio_mu": 0.06643532758966138,
+      "bending_rigidity_kb": 2.817547178208092,
+      "cauchy_number_cy": 0.3549186355189912,
+      "e_eff_mpa": 26.88,
+      "rom": {
+        "wall_s": 0.255,
+        "cl": 0.7947,
+        "cd": 0.0577,
+        "tip_mm": 0.51,
+        "vm_mpa": 0.034,
+        "lift_to_drag": 13.773
+      },
+      "industrial": {
+        "cl_rigid": 0.7661,
+        "cd_rigid": 0.068,
+        "cl_deformed": 0.7222,
+        "cd_deformed": 0.048,
+        "tip_mm": 0.438,
+        "vm_mpa": 0.027,
+        "cells": 15774,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 67530.1,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.1004,
+        "cd_rom_vs_of_deformed": 0.2021,
+        "tip_rom_vs_ccx": 0.1644,
+        "vm_rom_vs_ccx": 0.2593,
+        "washout_cl_drop": 0.0439,
+        "washout_cd_drop": 0.02
+      }
+    },
+    {
+      "slug": "tpu_95a_U2p00",
+      "material_id": "tpu_95a",
+      "flow_speed_m_s": 2.0,
+      "reynolds_number": 199203.187250996,
+      "mass_ratio_mu": 0.06643532758966138,
+      "bending_rigidity_kb": 0.17609669863800576,
+      "cauchy_number_cy": 5.6786981683038595,
+      "e_eff_mpa": 26.88,
+      "rom": {
+        "wall_s": 0.515,
+        "cl": 0.5311,
+        "cd": 0.0295,
+        "tip_mm": 5.322,
+        "vm_mpa": 0.311,
+        "lift_to_drag": 18.003
+      },
+      "industrial": {
+        "cl_rigid": 0.4435,
+        "cd_rigid": 0.0865,
+        "cl_deformed": 0.4388,
+        "cd_deformed": 0.0179,
+        "tip_mm": 4.254,
+        "vm_mpa": 0.258,
+        "cells": 16155,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 196389.1,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.2103,
+        "cd_rom_vs_of_deformed": 0.648,
+        "tip_rom_vs_ccx": 0.2511,
+        "vm_rom_vs_ccx": 0.2054,
+        "washout_cl_drop": 0.0047,
+        "washout_cd_drop": 0.0686
+      }
+    },
+    {
+      "slug": "tpu_95a_U3p00",
+      "material_id": "tpu_95a",
+      "flow_speed_m_s": 3.0,
+      "reynolds_number": 298804.7808764941,
+      "mass_ratio_mu": 0.06643532758966138,
+      "bending_rigidity_kb": 0.07826519939466922,
+      "cauchy_number_cy": 12.777070878683684,
+      "e_eff_mpa": 26.88,
+      "rom": {
+        "wall_s": 0.523,
+        "cl": 0.377,
+        "cd": 0.0196,
+        "tip_mm": 8.36,
+        "vm_mpa": 0.486,
+        "lift_to_drag": 19.235
+      },
+      "industrial": {
+        "cl_rigid": 0.6952,
+        "cd_rigid": 0.0596,
+        "cl_deformed": 0.1844,
+        "cd_deformed": 0.0116,
+        "tip_mm": 4.022,
+        "vm_mpa": 0.244,
+        "cells": 16093,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 259973.2,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 1.0445,
+        "cd_rom_vs_of_deformed": 0.6897,
+        "tip_rom_vs_ccx": 1.0786,
+        "vm_rom_vs_ccx": 0.9918,
+        "washout_cl_drop": 0.5108,
+        "washout_cd_drop": 0.048
+      }
+    },
+    {
+      "slug": "pla_standard_U0p50",
+      "material_id": "pla_standard",
+      "flow_speed_m_s": 0.5,
+      "reynolds_number": 49800.796812749,
+      "mass_ratio_mu": 0.06808248447204969,
+      "bending_rigidity_kb": 275.1021758722623,
+      "cauchy_number_cy": 0.0036350130522570935,
+      "e_eff_mpa": 2992.5,
+      "rom": {
+        "wall_s": 0.498,
+        "cl": 0.8235,
+        "cd": 0.0608,
+        "tip_mm": 0.006,
+        "vm_mpa": 0.032,
+        "lift_to_drag": 13.544
+      },
+      "industrial": {
+        "cl_rigid": 0.7661,
+        "cd_rigid": 0.068,
+        "cl_deformed": 0.7479,
+        "cd_deformed": 0.0548,
+        "tip_mm": 0.005,
+        "vm_mpa": 0.03,
+        "cells": 16073,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 66069.6,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.1011,
+        "cd_rom_vs_of_deformed": 0.1095,
+        "tip_rom_vs_ccx": 0.2,
+        "vm_rom_vs_ccx": 0.0667,
+        "washout_cl_drop": 0.0182,
+        "washout_cd_drop": 0.0132
+      }
+    },
+    {
+      "slug": "pla_standard_U2p00",
+      "material_id": "pla_standard",
+      "flow_speed_m_s": 2.0,
+      "reynolds_number": 199203.187250996,
+      "mass_ratio_mu": 0.06808248447204969,
+      "bending_rigidity_kb": 17.193885992016394,
+      "cauchy_number_cy": 0.058160208836113496,
+      "e_eff_mpa": 2992.5,
+      "rom": {
+        "wall_s": 0.508,
+        "cl": 0.8324,
+        "cd": 0.0564,
+        "tip_mm": 0.09,
+        "vm_mpa": 0.512,
+        "lift_to_drag": 14.759
+      },
+      "industrial": {
+        "cl_rigid": 0.4435,
+        "cd_rigid": 0.0865,
+        "cl_deformed": 0.8881,
+        "cd_deformed": 0.0847,
+        "tip_mm": 0.097,
+        "vm_mpa": 0.575,
+        "cells": 15703,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 372565.8,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.0627,
+        "cd_rom_vs_of_deformed": 0.3341,
+        "tip_rom_vs_ccx": 0.0722,
+        "vm_rom_vs_ccx": 0.1096,
+        "washout_cl_drop": -0.4446,
+        "washout_cd_drop": 0.0018
+      }
+    },
+    {
+      "slug": "pla_standard_U3p00",
+      "material_id": "pla_standard",
+      "flow_speed_m_s": 3.0,
+      "reynolds_number": 298804.7808764941,
+      "mass_ratio_mu": 0.06808248447204969,
+      "bending_rigidity_kb": 7.641727107562841,
+      "cauchy_number_cy": 0.13086046988125538,
+      "e_eff_mpa": 2992.5,
+      "rom": {
+        "wall_s": 0.547,
+        "cl": 0.8293,
+        "cd": 0.0553,
+        "tip_mm": 0.203,
+        "vm_mpa": 1.149,
+        "lift_to_drag": 14.996
+      },
+      "industrial": {
+        "cl_rigid": 0.6952,
+        "cd_rigid": 0.0596,
+        "cl_deformed": 0.7128,
+        "cd_deformed": 0.0988,
+        "tip_mm": 0.175,
+        "vm_mpa": 1.038,
+        "cells": 15757,
+        "mpi_ranks": 8,
+        "wall_ms_deformed": 576874.1,
+        "executed": true,
+        "stages": [
+          "preCICE v3 XML Validation (precice-tools check)",
+          "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+          "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+          "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+          "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+        ]
+      },
+      "errors": {
+        "cl_rom_vs_of_deformed": 0.1634,
+        "cd_rom_vs_of_deformed": 0.4403,
+        "tip_rom_vs_ccx": 0.16,
+        "vm_rom_vs_ccx": 0.1069,
+        "washout_cl_drop": -0.0176,
+        "washout_cd_drop": -0.0392
+      }
+    }
+  ]
+}

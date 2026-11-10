@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MTP Research Paper & Presentation — 3D-Printed Underwater Fin FSI</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --card: #f1f5f9;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+      --cyan: #0284c7;
+      --emerald: #059669;
+      --amber: #d97706;
+      --rose: #e11d48;
+      --purple: #7c3aed;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    /* Sticky Top Header */
+    header.topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text);
+    }
+    .badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-block;
+    }
+    .mode-switch {
+      display: flex;
+      gap: 0.45rem;
+      background: var(--card);
+      padding: 0.25rem;
+      border-radius: 0.6rem;
+      border: 1px solid var(--border);
+    }
+    .mode-btn {
+      background: transparent;
+      color: var(--muted);
+      border: none;
+      padding: 0.45rem 0.95rem;
+      border-radius: 0.45rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mode-btn:hover {
+      color: var(--text);
+    }
+    .mode-btn.active {
+      background: var(--cyan);
+      color: #ffffff;
+      box-shadow: 0 1px 2px rgba(2, 132, 199, 0.25);
+    }
+    /* Layout */
+    .layout {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 2rem;
+      padding: 2rem 1.5rem 4rem;
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      aside.toc { display: none; }
+    }
+    aside.toc {
+      position: sticky;
+      top: 4.8rem;
+      align-self: start;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 0.85rem;
+      padding: 1.15rem;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    aside.toc h4 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--cyan);
+      margin-bottom: 0.75rem;
+    }
+    aside.toc a {
+      display: block;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 500;
+      padding: 0.42rem 0.55rem;
+      border-radius: 0.4rem;
+      transition: 0.15s;
+    }
+    aside.toc a:hover {
+      color: var(--cyan);
+      background: #f0f9ff;
+    }
+    main.paper {
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+    section.block {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.85rem 2.1rem;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+    }
+    h1.paper-title {
+      font-size: 1.72rem;
+      line-height: 1.32;
+      color: #0f172a;
+      margin: 0.55rem 0 0.75rem;
+    }
+    h2.sec-title {
+      font-size: 1.25rem;
+      color: #0f2c59;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 0.55rem;
+      margin-bottom: 1.1rem;
+    }
+    p {
+      color: #334155;
+      font-size: 0.95rem;
+      margin-bottom: 0.85rem;
+    }
+    code {
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 0.12rem 0.38rem;
+      border-radius: 0.3rem;
+      border: 1px solid #e2e8f0;
+      font-size: 0.86em;
+    }
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      gap: 0.9rem;
+      margin-top: 1.1rem;
+    }
+    .kpi-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.95rem 1.1rem;
+    }
+    .kpi-label { font-size: 0.74rem; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+    .kpi-val { font-size: 1.35rem; font-weight: 800; font-family: monospace; margin: 0.2rem 0; }
+    .kpi-sub { font-size: 0.77rem; color: var(--muted); }
+    /* Native Zero-Overlap Pipeline Flowchart */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .stage-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--cyan);
+      border-radius: 0.75rem;
+      padding: 1.05rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .stage-card.s2 { border-top-color: var(--amber); }
+    .stage-card.s3 { border-top-color: #2563eb; }
+    .stage-card.s4 { border-top-color: var(--emerald); }
+    .stage-card.s5 { border-top-color: var(--purple); }
+    .stage-num { font-size: 0.72rem; font-family: monospace; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .stage-title { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
+    .stage-list { padding-left: 1.1rem; font-size: 0.83rem; color: #334155; display: flex; flex-direction: column; gap: 0.28rem; }
+    /* Math Box */
+    .math-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 0.9rem 0;
+    }
+    .eq-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--cyan);
+      border-radius: 0.6rem;
+      padding: 0.95rem 1.15rem;
+    }
+    .eq-title { font-size: 0.78rem; color: var(--cyan); font-weight: 700; text-transform: uppercase; margin-bottom: 0.35rem; }
+    .eq-code { font-family: "Cambria Math", Georgia, monospace; font-size: 0.96rem; font-weight: 700; color: #0f172a; margin-bottom: 0.35rem; }
+    .eq-desc { font-size: 0.82rem; color: #475569; margin: 0; }
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: 0.75rem; border: 1px solid var(--border); background: #fff; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    th, td { padding: 0.75rem 0.95rem; text-align: left; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
+    th { background: #f1f5f9; color: #0f2c59; font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    td.num, th.num { text-align: right; font-family: monospace; }
+    tr:hover td { background: #f8fafc; }
+    /* Chart Grid (Spacious, Zero Overlap, Light Mode) */
+    .chart-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 1.25rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 600px) {
+      .chart-grid-2 { grid-template-columns: 1fr; }
+    }
+    .chart-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 0.85rem;
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    }
+    .chart-title { font-size: 0.93rem; font-weight: 700; color: #0f172a; }
+    .chart-sub { font-size: 0.78rem; color: var(--muted); }
+    .chart-caption {
+      font-size: 0.81rem;
+      color: #334155;
+      background: #f0fdf4;
+      border-left: 3px solid var(--emerald);
+      padding: 0.55rem 0.75rem;
+      border-radius: 0.35rem;
+    }
+    svg.plot {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      padding: 0.25rem;
+    }
+    /* Slide Deck Mode */
+    #slide-mode {
+      display: none;
+      max-width: 1220px;
+      margin: 1.5rem auto 3rem;
+      padding: 0 1.5rem;
+    }
+    .slide-frame {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 1.1rem;
+      padding: 2.2rem 2.6rem;
+      min-height: 580px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+    .slide-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.2rem;
+      gap: 1rem;
+    }
+    .slide-btn {
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.55rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+    .slide-btn:hover { border-color: var(--cyan); color: var(--cyan); background: #f0f9ff; }
+    .speaker-notes {
+      margin-top: 1rem;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      font-size: 0.88rem;
+      color: #0c4a6e;
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="badge">Master's Thesis Project (MTP)</span>
+    <strong style="font-size:0.95rem;">3D-Printed Flexible Underwater Fin FSI — Paper &amp; Defense System</strong>
+  </div>
+  <div class="mode-switch">
+    <button id="btn-paper" class="mode-btn active" onclick="setMode('paper')">📄 Interactive Research Paper</button>
+    <button id="btn-slides" class="mode-btn" onclick="setMode('slides')">🖥️ Presentation Slide Deck + Speech</button>
+    <a href="visualizer.html" class="mode-btn" style="text-decoration:none;display:inline-flex;align-items:center;">🔬 Archived CFD/FEA Visualizer</a>
+    <a href="Ocean_Engineering_FSI_Paper.pdf" target="_blank" class="mode-btn" style="text-decoration:none;display:inline-flex;align-items:center;">📥 FSI Paper PDF</a>
+    <a href="MTP_Presentation_Slides.pdf" target="_blank" class="mode-btn" style="text-decoration:none;display:inline-flex;align-items:center;">📊 Presentation PDF</a>
+  </div>
+</header>
+
+<!-- ===================================================================== -->
+<!-- MODE 1: FULL INTERACTIVE RESEARCH PAPER (LIGHT MODE, ZERO OVERLAP)     -->
+<!-- ===================================================================== -->
+<div id="paper-mode" class="layout">
+  <aside class="toc">
+    <h4>Paper Navigation</h4>
+    <a href="#sec-abstract">0. Abstract &amp; Key Metrics</a>
+    <a href="#sec-intro">1. Problem &amp; Added-Mass Physics</a>
+    <a href="#sec-pipeline">2. 5-Stage Dual-Fidelity Architecture</a>
+    <a href="#sec-equations">3. Governing Equations &amp; Solvers</a>
+      <a href="#sec-verification">4. Deformed-Camber Cloud CFD Proof</a>
+      <a href="#sec-multi-industrial">4B. Multi-Material Industrial vs ROM</a>
+    <a href="#sec-analytical">5. Analytical &amp; Asymptotic Checks</a>
+    <a href="#sec-polymers">6. Multi-Polymer &amp; 3D-Print Study</a>
+    <a href="#sec-future">7. Limitations &amp; Future Scope</a>
+  </aside>
+
+  <main class="paper">
+    <!-- Hero / Abstract -->
+    <section id="sec-abstract" class="block">
+      <span class="badge">Ocean Engineering &amp; Hydroelasticity · November 2026</span>
+      <h1 class="paper-title">
+        Fluid–Structure Interaction of 3D-Printed Flexible Underwater Vehicle Fins: Dual-Fidelity Methodology, Deformed-Camber OpenFOAM/CalculiX Verification, and Polymer Design Trends
+      </h1>
+      <p style="color:var(--muted); font-size:0.88rem;">
+        <strong>Sahil Patel</strong> (Roll No. 22NA30028) · Under the supervision of <strong>Prof. Swapnadip De Chowdhury</strong><br />
+        Department of Ocean Engineering &amp; Naval Architecture, Indian Institute of Technology Kharagpur<br />
+        Solvers: SciPy/LAPACK C¹ Hermite ROM, Gmsh 4.8.4, OpenFOAM (<code>pimpleFoam</code> k–ω SST), CalculiX 2.17 (3D <code>C3D8I</code> <code>NLGEOM</code>), preCICE v3.1.2
+      </p>
+      <p style="margin-top:0.9rem;">
+        <strong>Abstract:</strong> Autonomous underwater vehicles (AUVs) increasingly use three-dimensional printed polymer control surfaces (TPU 85A/95A, PA12 Nylon, PETG, PLA). Because polymer density is nearly equal to surrounding water (<code>ρ_s ≈ 1020–1270 kg/m³</code> vs. <code>ρ_f ≈ 998–1025 kg/m³</code>), the structure-to-fluid mass ratio is small (<code>μ = ρ_s·h_mean / (ρ_f·L) ≈ 0.066</code>). In this low-<code>μ</code> regime, fluid added mass is <strong>11.8× larger</strong> than the fin's structural mass, causing explicit FSI coupling schemes to diverge unconditionally. This work develops two solvers for the same physics. The <strong>full-order continuum solver</strong> chains Gmsh boundary-layer meshing, OpenFOAM <code>k–ω SST</code> CFD, and 3D nonlinear CalculiX FEA (<code>C3D8I</code>, <code>NLGEOM</code>) on prescribed rigid and deformed-camber geometries. The <strong>coupled reduced-order solver</strong> carries the same mechanisms in a C¹ Cubic Hermite elastica model that converges in <strong>0.51 s</strong>. Re-meshing the bent camber and solving 19,358 unsteady time steps shows directly in Navier–Stokes that passive bending reduces lift by <strong>−31.0%</strong> (<code>C_L: 0.9301 → 0.6414–0.6624</code>) and drag by <strong>−69.5%</strong>. Intersecting the computed fluid and solid response curves gives a quasi-steady equilibrium estimate (<code>u*_tip = 2.40 mm</code>, <code>C*_L = 0.6775</code>, <code>σ*_vM = 0.146 MPa</code>) from which the reduced-order model differs by <strong>1.5% in lift</strong>, <strong>1.4% in root stress</strong>, and <strong>5.4% in tip deflection</strong> at <strong>1,150× lower cost</strong>. A 15-case full-order campaign then defines the envelope in which the reduced-order model reproduces continuum behaviour.
+      </p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Passive Washout Lift Drop</div>
+          <div class="kpi-val" style="color:var(--emerald);">−31.0%</div>
+          <div class="kpi-sub">OpenFOAM Rigid 0.9301 → Bent 0.6414</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Secant Equilibrium Match</div>
+          <div class="kpi-val" style="color:var(--cyan);">1.5% Diff</div>
+          <div class="kpi-sub">ROM CL = 0.6877 vs. Secant OF+CCX 0.6775</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">3D Root Stress Agreement</div>
+          <div class="kpi-val" style="color:var(--purple);">1.4% Diff</div>
+          <div class="kpi-sub">ROM 0.148 MPa vs. CalculiX 0.146 MPa</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Submerged Freq Reduction</div>
+          <div class="kpi-val" style="color:var(--amber);">3.58× Lower</div>
+          <div class="kpi-sub">19.35 Hz (Air) → 5.41 Hz (Water, μ=0.066)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Computational Speedup</div>
+          <div class="kpi-val" style="color:var(--rose);">1,150× Faster</div>
+          <div class="kpi-sub">ROM: 0.51 s vs. 1-Core OpenFOAM: 588 s</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 1: Problem & Added-Mass Physics -->
+    <section id="sec-intro" class="block">
+      <h2 class="sec-title">1. Problem Statement &amp; Why Underwater Polymer FSI Is Challenging</h2>
+      <p>
+        When a flexible 3D-printed hydrofoil is placed at an angle of attack <code>α₀</code> in water, hydrodynamic pressure bends the trailing edge upward toward the incoming flow. This passive deformation reduces the local angle of attack and introduces negative aerodynamic camber—a mechanism called <strong>passive hydroelastic washout</strong>. Three physical phenomena govern this system:
+      </p>
+      <div class="math-grid">
+        <div class="eq-box">
+          <div class="eq-title">Challenge 1: Added-Mass Instability (μ ≪ 1)</div>
+          <div class="eq-code">μ = (ρ_s · h_mean) / (ρ_f · L) ≈ 0.0664</div>
+          <p class="eq-desc">
+            The cylinder of water accelerated by the fin has mass <code>M_a = (π/4)ρ_f L² = 11.83 × M_s</code>. Unrelaxed explicit coupling amplifies interface error by <code>ρ = 11.83×</code> per step and diverges immediately.
+          </p>
+        </div>
+        <div class="eq-box">
+          <div class="eq-title">Challenge 2: 3D-Print Sandwich Anisotropy</div>
+          <div class="eq-code">E_eff = E₀ · k_orient · [1 − (1 − 2t_s/h)³(1 − φ²)]</div>
+          <p class="eq-desc">
+            Fused Filament Fabrication (FFF) prints solid outer perimeters (<code>2t_s/h = 0.25</code>) that act as an I-beam flange, plus PA12 Nylon absorbs water and loses 55% of its modulus after 48h submersion.
+          </p>
+        </div>
+        <div class="eq-box">
+          <div class="eq-title">Challenge 3: Submerged Natural Frequency Shift</div>
+          <div class="eq-code">f_{1,water} = f_{1,vac} / √(1 + Γ_3D · π / (4μ))</div>
+          <p class="eq-desc">
+            Because <code>μ ≈ 0.066</code> across all 3D-printed plastics, submerging any polymer fin in water drops its natural bending frequency by <strong>~72%</strong> (Chu 1963 / Lindholm et al. 1965).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: 5-Stage Dual-Fidelity Pipeline -->
+    <section id="sec-pipeline" class="block">
+      <h2 class="sec-title">2. How the System Works: Two Solver Paths, One Problem</h2>
+      <p>
+        Rather than relying on a single expensive solver for every question, the work develops two paths in parallel: a <strong>full-order continuum solver</strong> (Gmsh + OpenFOAM <code>k–ω SST</code> + 3D CalculiX) that computes the physics on prescribed rigid and deformed-camber shapes, and a <strong>coupled reduced-order solver</strong> that carries the same mechanisms at <strong>0.51 s</strong> per case for design iteration.
+      </p>
+      <div class="pipeline-grid">
+        <div class="stage-card s1">
+          <span class="stage-num">Stage 01 · Input &amp; Homogenization</span>
+          <div class="stage-title">Geometry &amp; 3D-Print Model</div>
+          <ul class="stage-list">
+            <li>NACA 00xx profile (<code>L, b, t/c, α₀</code>) with 12% root clamp.</li>
+            <li>6 polymers: TPU 85A/95A, PA12 (Wet/Dry), PETG, PLA.</li>
+            <li>Computes shell–infill sandwich stiffness <code>E_eff</code>.</li>
+          </ul>
+        </div>
+        <div class="stage-card s2">
+          <span class="stage-num">Stage 02 · Physics Gate</span>
+          <div class="stage-title">Dimensionless Governance</div>
+          <ul class="stage-list">
+            <li>Computes <code>Re, μ, K_B, C_Y, U_r</code> automatically.</li>
+            <li>Sets <code>y⁺ = 1</code> prism height (<code>Δy₁ = 16.6 μm</code>).</li>
+            <li>Selects <code>laminar</code> vs. <code>k–ω SST</code> &amp; blocks explicit FSI.</li>
+          </ul>
+        </div>
+        <div class="stage-card s3">
+          <span class="stage-num">Stage 03A · Reduced-Order Solver</span>
+          <div class="stage-title">Coupled C¹ Hermite ROM (0.51 s)</div>
+          <ul class="stage-list">
+            <li>35-node C¹ Cubic Hermite beam + elastica curvature.</li>
+            <li>Viscous circulation + Theodorsen plunge damping.</li>
+            <li>Multi-secant <code>IQN-ILS</code> (<code>dgelsd</code>) → exports bent camber.</li>
+          </ul>
+        </div>
+        <div class="stage-card s4">
+          <span class="stage-num">Stage 03B · Full-Order Solver</span>
+          <div class="stage-title">Gmsh 4.8 + OpenFOAM MPI</div>
+          <ul class="stage-list">
+            <li>Meshes both Rigid (15,592 cells) &amp; Bent (16,083 cells) foils.</li>
+            <li>Runs 19,358 adaptive Courant steps (<code>Co ≤ 0.6</code>) in <code>pimpleFoam</code>.</li>
+            <li>8-rank hierarchical MPI finishes in ~40 s (18× speedup).</li>
+          </ul>
+        </div>
+        <div class="stage-card s5">
+          <span class="stage-num">Stage 04 · Solid FEA &amp; Equilibrium</span>
+          <div class="stage-title">CalculiX 3D C3D8I + Match</div>
+          <ul class="stage-list">
+            <li>Applies exact <code>*DLOAD</code> pressure tractions on 3D <code>C3D8I</code> bricks.</li>
+            <li>Solves Total Lagrangian <code>*STEP, NLGEOM</code> hyperelasticity.</li>
+            <li>Intersects fluid &amp; solid curves at <code>u* = 2.40 mm, C*_L = 0.678</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Governing Equations & Solver Table -->
+    <section id="sec-equations" class="block">
+      <h2 class="sec-title">3. Mathematical Formulation &amp; Trusted Scientific Software Stack</h2>
+      <div class="math-grid">
+        <div class="eq-box">
+          <div class="eq-title">1. ALE Navier–Stokes &amp; k–ω SST (OpenFOAM)</div>
+          <div class="eq-code">ρ_f (∂u_f/∂t + (u_f − w)·∇u_f) = −∇p + ∇·[2ρ_f(ν_f + ν_t)D(u_f)]</div>
+          <p class="eq-desc">Solved via finite-volume PIMPLE time-stepping with adaptive Courant control (<code>maxCo ≤ 0.6</code>) and Menter's shear-stress transport closure.</p>
+        </div>
+        <div class="eq-box">
+          <div class="eq-title">2. Nonlinear Elastica &amp; 3D Hyperelastic Solid</div>
+          <div class="eq-code">M_s ü + C_s u̇ + K_sec(u) u = F_hydro(u, u̇, t),   κ = |w″| / (1 + w′²)^(3/2)</div>
+          <p class="eq-desc">3D CalculiX uses Neo-Hookean/Mooney–Rivlin hyperelastic energy on <code>C3D8I</code> incompatible-mode hexahedra; the ROM uses C¹ Hermite elements calibrated with 3D root shear relief (0.76).</p>
+        </div>
+        <div class="eq-box">
+          <div class="eq-title">3. Multi-Secant IQN-ILS Acceleration (preCICE / SciPy)</div>
+          <div class="eq-code">min_α ‖V_k α + r^(k)‖₂   ⇒   u^(k+1) = u^(k) + r^(k) + W_k α</div>
+          <p class="eq-desc">Approximates the inverse interface Jacobian from secant history matrices <code>V_k, W_k</code> via economy QR/SVD filtering, converging in 3–4 sub-iterations at <code>μ = 0.0664</code>.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Simulation Stage</th>
+              <th>Trusted Package</th>
+              <th>Mathematical Formulation</th>
+              <th>Role in Thesis System</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Navier–Stokes CFD</strong></td>
+              <td><code>OpenFOAM (pimpleFoam)</code></td>
+              <td>Finite-Volume ALE PIMPLE, <code>k–ω SST</code>, 8-rank MPI</td>
+              <td>Computes viscous &amp; pressure forces (<code>C_L, C_D, C_M</code>) on rigid &amp; bent meshes</td>
+            </tr>
+            <tr>
+              <td><strong>Nonlinear 3D FEA</strong></td>
+              <td><code>CalculiX 2.17 (ccx)</code></td>
+              <td>Total Lagrangian <code>NLGEOM</code>, <code>C3D8I</code> bricks, <code>*DLOAD</code></td>
+              <td>Computes 3D hyperelastic deflection <code>u_tip</code> &amp; root stress <code>σ_vM</code></td>
+            </tr>
+            <tr>
+              <td><strong>Conforming Meshing</strong></td>
+              <td><code>Gmsh 4.8.4</code></td>
+              <td>OpenCASCADE 2D/3D unstructured + boundary layer</td>
+              <td>Meshes both rigid NACA and deformed-camber foils (<code>y⁺ ≈ 1</code>)</td>
+            </tr>
+            <tr>
+              <td><strong>Coupling &amp; Mapping</strong></td>
+              <td><code>preCICE v3.1.2</code></td>
+              <td><code>serial-implicit</code>, <code>IQN-ILS</code>, C⁶ RBF mapping</td>
+              <td>Validates coupling XML schema &amp; multi-solver interface mapping</td>
+            </tr>
+            <tr>
+              <td><strong>Coupled ROM</strong></td>
+              <td><code>SciPy / LAPACK</code></td>
+              <td>C¹ Hermite Elastica FEM (<code>eigh</code>, <code>dposv</code>, <code>dgelsd</code>)</td>
+              <td>Transient FSI, modal analysis, &amp; IQN-ILS (0.51 s)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 4: Deformed-Camber Cloud Verification & Native Light-Mode SVG Charts -->
+    <section id="sec-verification" class="block">
+      <h2 class="sec-title">4. Full-Order Solver Benchmark: Deformed-Camber OpenFOAM + CalculiX vs. Reduced-Order</h2>
+      <p>
+        To verify whether the fast ROM's predicted lift (<code>C_L = 0.6877</code> at <code>u_tip = 2.53 mm</code>) is physically accurate for a TPU 95A NACA 0008 fin at <code>U_∞ = 1.2 m/s, α₀ = 8°</code> (<code>Re = 1.20×10⁵, μ = 0.0664</code>), we executed both the rigid baseline and the deformed-camber geometry in <strong>OpenFOAM + CalculiX</strong> on a 60-vCPU Google Cloud Spot VM (<code>c2-standard-60</code>):
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Physical Quantity</th>
+              <th class="num">OpenFOAM + CCX (Rigid Foil)</th>
+              <th class="num">OpenFOAM + CCX (Bent t=0.5s)</th>
+              <th class="num">OpenFOAM + CCX (Asymptotic t→∞)</th>
+              <th class="num" style="color:var(--purple);">Secant OF+CCX Equilibrium Estimate</th>
+              <th class="num" style="color:var(--cyan);">Coupled C¹ Hermite ROM</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Lift Coefficient (C_L)</strong></td>
+              <td class="num" style="color:var(--rose); font-weight:700;">0.9301</td>
+              <td class="num" style="color:var(--emerald); font-weight:700;">0.6414 (−31.0%)</td>
+              <td class="num">0.6624</td>
+              <td class="num" style="color:var(--purple); font-weight:700;">0.6775</td>
+              <td class="num" style="color:var(--cyan); font-weight:700;">0.6877 (1.5% diff)</td>
+            </tr>
+            <tr>
+              <td><strong>Drag Coefficient (C_D)</strong></td>
+              <td class="num">0.1140</td>
+              <td class="num" style="color:var(--emerald); font-weight:700;">0.0348 (−69.5%)</td>
+              <td class="num">0.0358</td>
+              <td class="num" style="color:var(--purple); font-weight:700;">0.0365</td>
+              <td class="num" style="color:var(--cyan); font-weight:700;">0.0430</td>
+            </tr>
+            <tr>
+              <td><strong>Pitching Moment (C_M)</strong></td>
+              <td class="num">−0.2798</td>
+              <td class="num">−0.1487</td>
+              <td class="num">−0.1535</td>
+              <td class="num" style="color:var(--purple); font-weight:700;">−0.1570</td>
+              <td class="num" style="color:var(--cyan); font-weight:700;">−0.1683</td>
+            </tr>
+            <tr>
+              <td><strong>Tip Deflection u_tip (mm)</strong></td>
+              <td class="num">3.246 mm</td>
+              <td class="num">2.239 mm</td>
+              <td class="num">2.317 mm</td>
+              <td class="num" style="color:var(--purple); font-weight:700;">2.398 mm</td>
+              <td class="num" style="color:var(--cyan); font-weight:700;">2.530 mm (5.4% diff)</td>
+            </tr>
+            <tr>
+              <td><strong>Peak Root von Mises σ_vM (MPa)</strong></td>
+              <td class="num">0.197 MPa</td>
+              <td class="num">0.136 MPa</td>
+              <td class="num">0.141 MPa</td>
+              <td class="num" style="color:var(--purple); font-weight:700;">0.146 MPa</td>
+              <td class="num" style="color:var(--cyan); font-weight:700;">0.148 MPa (1.4% diff)</td>
+            </tr>
+            <tr>
+              <td><strong>Mesh Size / Time Steps</strong></td>
+              <td class="num">15,592 cells / 17,174</td>
+              <td class="num">16,083 cells / 19,358</td>
+              <td class="num">Wagner Fit</td>
+              <td class="num">Secant Intersection</td>
+              <td class="num">35 Hermite / 80 steps</td>
+            </tr>
+            <tr>
+              <td><strong>Wall-Clock Runtime</strong></td>
+              <td class="num">758.5 s (1c) / 42 s (8 MPI)</td>
+              <td class="num">587.6 s (1c) / 38 s (8 MPI)</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num" style="color:var(--emerald); font-weight:700;">0.51 s (1,150× faster)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Native Spacious Light-Mode SVG Charts (Zero Overlap) -->
+      <div class="chart-grid-2">
+        <!-- Chart 4A: OpenFOAM Transient Lift Convergence -->
+        <div class="chart-card">
+          <div>
+            <div class="chart-title">Fig 4A. OpenFOAM k–ω SST Lift Convergence: Rigid vs. Bent Foil</div>
+            <div class="chart-sub">19,358 adaptive Courant steps (t = 0 → 0.50 s) showing −31% passive washout</div>
+          </div>
+          <svg class="plot" viewBox="0 0 520 260">
+            <line x1="55" y1="25" x2="500" y2="25" stroke="#e2e8f0" />
+            <line x1="55" y1="75" x2="500" y2="75" stroke="#e2e8f0" />
+            <line x1="55" y1="125" x2="500" y2="125" stroke="#e2e8f0" />
+            <line x1="55" y1="175" x2="500" y2="175" stroke="#e2e8f0" />
+            <line x1="55" y1="215" x2="500" y2="215" stroke="#64748b" />
+            <line x1="55" y1="20" x2="55" y2="215" stroke="#64748b" />
+            <text x="48" y="29" fill="#334155" font-size="11" text-anchor="end">1.00</text>
+            <text x="48" y="79" fill="#334155" font-size="11" text-anchor="end">0.85</text>
+            <text x="48" y="129" fill="#334155" font-size="11" text-anchor="end">0.70</text>
+            <text x="48" y="179" fill="#334155" font-size="11" text-anchor="end">0.55</text>
+            <text x="48" y="218" fill="#334155" font-size="11" text-anchor="end">0.40</text>
+            <text x="55" y="234" fill="#334155" font-size="11" text-anchor="middle">0.0s</text>
+            <text x="144" y="234" fill="#334155" font-size="11" text-anchor="middle">0.1s</text>
+            <text x="233" y="234" fill="#334155" font-size="11" text-anchor="middle">0.2s</text>
+            <text x="322" y="234" fill="#334155" font-size="11" text-anchor="middle">0.3s</text>
+            <text x="411" y="234" fill="#334155" font-size="11" text-anchor="middle">0.4s</text>
+            <text x="500" y="234" fill="#334155" font-size="11" text-anchor="middle">0.5s</text>
+            <text x="275" y="253" fill="#0f172a" font-size="11" font-weight="600" text-anchor="middle">Physical Simulation Time t (s)</text>
+            <line x1="55" y1="48" x2="500" y2="48" stroke="#e11d48" stroke-width="2.5" />
+            <text x="65" y="40" fill="#be123c" font-size="11" font-weight="bold">OpenFOAM Rigid Foil: C_L = 0.9301 (Unwashed)</text>
+            <line x1="55" y1="129" x2="500" y2="129" stroke="#0284c7" stroke-width="2.2" stroke-dasharray="6,4" />
+            <text x="65" y="121" fill="#0369a1" font-size="11" font-weight="bold">Coupled C¹ Hermite ROM: C_L = 0.6877</text>
+            <polyline fill="none" stroke="#059669" stroke-width="2.8" points="75,212 100,196 144,181 233,160 322,152 411,148 500,144" />
+            <circle cx="144" cy="181" r="4" fill="#059669" />
+            <circle cx="233" cy="160" r="4" fill="#059669" />
+            <circle cx="322" cy="152" r="4" fill="#059669" />
+            <circle cx="411" cy="148" r="4" fill="#059669" />
+            <circle cx="500" cy="144" r="4.5" fill="#059669" />
+            <text x="245" y="174" fill="#047857" font-size="11" font-weight="bold">OpenFOAM Bent Camber: C_L(0.5s) = 0.6414 → 0.6624</text>
+            <line x1="465" y1="50" x2="465" y2="140" stroke="#d97706" stroke-width="2" />
+            <polygon points="465,143 460,134 470,134" fill="#d97706" />
+            <text x="455" y="96" fill="#b45309" font-size="11" font-weight="bold" text-anchor="end">−31.0% Washout</text>
+          </svg>
+          <div class="chart-caption">
+            <strong>Physical Meaning:</strong> Upward trailing-edge deflection (2.53 mm) creates negative camber and lowers effective AoA, reducing lift by 31% in Navier–Stokes CFD. The rising green curve is Wagner's starting-vortex circulation build-up.
+          </div>
+        </div>
+
+        <!-- Chart 4B: Coupled Fluid-Solid Fixed-Point Intersection -->
+        <div class="chart-card">
+          <div>
+            <div class="chart-title">Fig 4B. Coupled Fluid–Solid Fixed-Point Equilibrium Intersection</div>
+            <div class="chart-sub">OpenFOAM fluid decambering curve C_L(u_tip) vs. 3D CalculiX solid line u_CCX(C_L)</div>
+          </div>
+          <svg class="plot" viewBox="0 0 520 260">
+            <line x1="55" y1="25" x2="500" y2="25" stroke="#e2e8f0" />
+            <line x1="55" y1="88" x2="500" y2="88" stroke="#e2e8f0" />
+            <line x1="55" y1="151" x2="500" y2="151" stroke="#e2e8f0" />
+            <line x1="55" y1="215" x2="500" y2="215" stroke="#64748b" />
+            <line x1="55" y1="20" x2="55" y2="215" stroke="#64748b" />
+            <text x="48" y="29" fill="#334155" font-size="11" text-anchor="end">1.00</text>
+            <text x="48" y="92" fill="#334155" font-size="11" text-anchor="end">0.80</text>
+            <text x="48" y="155" fill="#334155" font-size="11" text-anchor="end">0.60</text>
+            <text x="48" y="218" fill="#334155" font-size="11" text-anchor="end">0.40</text>
+            <text x="55" y="234" fill="#334155" font-size="11" text-anchor="middle">0.0 mm</text>
+            <text x="182" y="234" fill="#334155" font-size="11" text-anchor="middle">1.0 mm</text>
+            <text x="309" y="234" fill="#334155" font-size="11" text-anchor="middle">2.0 mm</text>
+            <text x="436" y="234" fill="#334155" font-size="11" text-anchor="middle">3.0 mm</text>
+            <text x="275" y="253" fill="#0f172a" font-size="11" font-weight="600" text-anchor="middle">Trailing-Edge Tip Deflection u_tip (mm)</text>
+            <line x1="55" y1="47" x2="500" y2="165" stroke="#059669" stroke-width="2.6" />
+            <text x="70" y="42" fill="#047857" font-size="11" font-weight="bold">OpenFOAM Fluid Washout C_L(u_tip)</text>
+            <line x1="233" y1="215" x2="498" y2="25" stroke="#7c3aed" stroke-width="2.6" />
+            <text x="485" y="45" fill="#6d28d9" font-size="11" font-weight="bold" text-anchor="end">CalculiX 3D Solid u_CCX(C_L)</text>
+            <circle cx="360" cy="127" r="7" fill="#d97706" stroke="#ffffff" stroke-width="2" />
+            <text x="345" y="112" fill="#b45309" font-size="11" font-weight="bold" text-anchor="end">OF+CCX Eq: (2.40 mm, 0.678)</text>
+            <circle cx="376" cy="124" r="6" fill="#0284c7" stroke="#ffffff" stroke-width="2" />
+            <text x="386" y="144" fill="#0369a1" font-size="11" font-weight="bold">ROM: (2.53 mm, 0.688)</text>
+          </svg>
+          <div class="chart-caption">
+            <strong>Physical Meaning:</strong> A two-way FSI state must satisfy both fluid mechanics (green line) and solid mechanics (purple line). Their secant intersection estimates the quasi-steady state at <code>(2.40 mm, 0.6775)</code>; the 0.51 s ROM differs by <strong>1.5% in C_L</strong>.
+          </div>
+        </div>
+
+        <!-- Chart 4C: Added-Mass Sub-Iteration Convergence -->
+        <div class="chart-card">
+          <div>
+            <div class="chart-title">Fig 4C. Added-Mass Sub-Iteration Stability at μ = 0.0664</div>
+            <div class="chart-sub">Log10 relative residual across sub-iterations k: Explicit divergence vs. IQN-ILS</div>
+          </div>
+          <svg class="plot" viewBox="0 0 520 260">
+            <line x1="55" y1="35" x2="500" y2="35" stroke="#e2e8f0" />
+            <line x1="55" y1="80" x2="500" y2="80" stroke="#e2e8f0" />
+            <line x1="55" y1="125" x2="500" y2="125" stroke="#e2e8f0" />
+            <line x1="55" y1="170" x2="500" y2="170" stroke="#059669" stroke-dasharray="4,4" />
+            <line x1="55" y1="215" x2="500" y2="215" stroke="#64748b" />
+            <line x1="55" y1="20" x2="55" y2="215" stroke="#64748b" />
+            <text x="48" y="39" fill="#334155" font-size="11" text-anchor="end">10⁺³</text>
+            <text x="48" y="84" fill="#334155" font-size="11" text-anchor="end">10⁰</text>
+            <text x="48" y="129" fill="#334155" font-size="11" text-anchor="end">10⁻³</text>
+            <text x="48" y="174" fill="#047857" font-size="11" font-weight="bold" text-anchor="end">10⁻⁶</text>
+            <text x="48" y="218" fill="#334155" font-size="11" text-anchor="end">10⁻⁹</text>
+            <text x="55" y="234" fill="#334155" font-size="11" text-anchor="middle">k=1</text>
+            <text x="154" y="234" fill="#334155" font-size="11" text-anchor="middle">k=3</text>
+            <text x="253" y="234" fill="#334155" font-size="11" text-anchor="middle">k=5</text>
+            <text x="352" y="234" fill="#334155" font-size="11" text-anchor="middle">k=7</text>
+            <text x="451" y="234" fill="#334155" font-size="11" text-anchor="middle">k=9</text>
+            <text x="275" y="253" fill="#0f172a" font-size="11" font-weight="600" text-anchor="middle">Implicit Sub-Iteration k Within Time Step</text>
+            <polyline fill="none" stroke="#e11d48" stroke-width="2.6" points="55,80 104,64 154,48 203,32 253,22" />
+            <text x="262" y="30" fill="#be123c" font-size="11" font-weight="bold">Explicit Coupling (ρ = 11.83 → Diverges!)</text>
+            <polyline fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="5,3" points="55,80 154,96 253,112 352,126 451,140 500,147" />
+            <text x="345" y="118" fill="#b45309" font-size="11" font-weight="600">Constant ω₀ = 0.08 (Slow)</text>
+            <polyline fill="none" stroke="#0284c7" stroke-width="2.3" points="55,80 104,96 154,118 203,142 253,164 302,182 352,198" />
+            <text x="360" y="196" fill="#0369a1" font-size="11" font-weight="600">Dynamic Aitken (7–8 iters)</text>
+            <polyline fill="none" stroke="#059669" stroke-width="3" points="55,80 104,115 154,162 203,196 253,212" />
+            <circle cx="55" cy="80" r="4" fill="#059669" />
+            <circle cx="104" cy="115" r="4" fill="#059669" />
+            <circle cx="154" cy="162" r="4" fill="#059669" />
+            <circle cx="203" cy="196" r="4.5" fill="#059669" />
+            <text x="215" y="208" fill="#047857" font-size="11" font-weight="bold">Multi-Secant IQN-ILS (Converges in 3–4 iters)</text>
+          </svg>
+          <div class="chart-caption">
+            <strong>Physical Meaning:</strong> Because water added mass is 11.8× the polymer fin's mass, explicit Gauss–Seidel diverges immediately. Multi-secant <code>IQN-ILS</code> reconstructs the added-mass secant Jacobian and converges in 3.6 iterations/step.
+          </div>
+        </div>
+
+        <!-- Chart 4D: Multi-Polymer Root Stress Shedding -->
+        <div class="chart-card">
+          <div>
+            <div class="chart-title">Fig 4D. Passive Load Shedding Across Flow Speed (U_∞ = 0.25 → 3.0 m/s)</div>
+            <div class="chart-sub">Peak Root von Mises Stress σ_vM (MPa): Flexible TPU vs. Rigid PLA/PETG</div>
+          </div>
+          <svg class="plot" viewBox="0 0 520 260">
+            <line x1="55" y1="30" x2="500" y2="30" stroke="#e2e8f0" />
+            <line x1="55" y1="92" x2="500" y2="92" stroke="#e2e8f0" />
+            <line x1="55" y1="154" x2="500" y2="154" stroke="#e2e8f0" />
+            <line x1="55" y1="215" x2="500" y2="215" stroke="#64748b" />
+            <line x1="55" y1="20" x2="55" y2="215" stroke="#64748b" />
+            <text x="48" y="34" fill="#334155" font-size="11" text-anchor="end">1.20</text>
+            <text x="48" y="96" fill="#334155" font-size="11" text-anchor="end">0.80</text>
+            <text x="48" y="158" fill="#334155" font-size="11" text-anchor="end">0.40</text>
+            <text x="48" y="218" fill="#334155" font-size="11" text-anchor="end">0.00</text>
+            <text x="55" y="234" fill="#334155" font-size="11" text-anchor="middle">0.25 m/s</text>
+            <text x="185" y="234" fill="#334155" font-size="11" text-anchor="middle">1.0 m/s</text>
+            <text x="342" y="234" fill="#334155" font-size="11" text-anchor="middle">2.0 m/s</text>
+            <text x="500" y="234" fill="#334155" font-size="11" text-anchor="middle">3.0 m/s</text>
+            <text x="275" y="253" fill="#0f172a" font-size="11" font-weight="600" text-anchor="middle">Freestream Flow Speed U_∞ (m/s)</text>
+            <polyline fill="none" stroke="#475569" stroke-width="2.6" points="55,213 185,195 342,136 500,36" />
+            <text x="425" y="45" fill="#1e293b" font-size="11" font-weight="bold" text-anchor="end">Rigid PLA / PETG (1.16 MPa)</text>
+            <polyline fill="none" stroke="#d97706" stroke-width="2.6" points="55,213 185,199 342,172 500,141" />
+            <text x="490" y="133" fill="#b45309" font-size="11" font-weight="bold" text-anchor="end">TPU 95A (0.48 MPa)</text>
+            <polyline fill="none" stroke="#059669" stroke-width="2.6" points="55,213 185,201 342,181 500,147" />
+            <text x="490" y="165" fill="#047857" font-size="11" font-weight="bold" text-anchor="end">TPU 85A (0.44 MPa, −62% Stress)</text>
+          </svg>
+          <div class="chart-caption">
+            <strong>Physical Meaning:</strong> Rigid PLA/PETG fins resist the full fluid load, so root stress grows quadratically with <code>U²</code> up to 1.16 MPa. Flexible TPU 85A/95A fins bend out of the way, shedding over <strong>60% of root bending stress</strong>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4B: Multi-Material Industrial Spot Campaign -->
+    <section id="sec-multi-industrial" class="block">
+      <h2 class="sec-title">4B. Multi-Material Full-Order Campaign vs Reduced-Order (Spot VM, 15 Cases)</h2>
+      <p>
+        A 15-case Google Cloud Spot campaign compared the 0.51&nbsp;s ROM against full industrial
+        OpenFOAM (<code>kOmegaSST</code>) + CalculiX (<code>C3D8I</code>) for six polymers and a speed sweep.
+        OpenFOAM lift histories converge asymptotically toward a steady washout value by
+        <code>t = 0.5 s</code>; the design-point mean errors are ≈6% in lift and ≈10% in tip deflection.
+      </p>
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <div>
+            <div class="chart-title">Fig 6. Industrial vs ROM: Lift, Tip Bend &amp; Asymptotic Cl(t)</div>
+            <div class="chart-sub">Panels: (a) Cl bars, (b) tip bars, (c) OpenFOAM asymptotic convergence, (d) speed-sweep washout</div>
+          </div>
+          <img src="figures/fig6_multi_material_industrial_vs_rom.png" alt="Fig 6 multi-material industrial vs ROM" style="width:100%;height:auto;border-radius:0.4rem;border:1px solid var(--border);" />
+          <div class="chart-caption">
+            <strong>Asymptote:</strong> Rigid OpenFOAM → Cl = 0.9301; bent TPU 95A → Cl(0.5s) = 0.6414 → Cl∞ ≈ 0.6624.
+            Diamonds at t = 0.5 s mark industrial end-states for TPU 85A, PA12 wet, and PLA.
+          </div>
+        </div>
+        <div class="chart-card">
+          <div>
+            <div class="chart-title">Fig 6B. Relative Error: ROM vs Full Industrial @ U = 1.2 m/s</div>
+            <div class="chart-sub">Green = Cl error % · Rose = tip deflection error %</div>
+          </div>
+          <img src="figures/fig6b_rom_industrial_relative_errors.png" alt="Fig 6B relative errors" style="width:100%;height:auto;border-radius:0.4rem;border:1px solid var(--border);" />
+          <div class="chart-caption">
+            Stiffer polymers (Nylon / PETG / PLA) stay within ~2–9%. Main thesis TPU 95A: ~7.6% Cl, ~13.4% tip.
+            Soft TPU 85A is the largest gap (~19% / ~25%) and needs industrial verification at high speed.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Analytical & Asymptotic Verification -->
+    <section id="sec-analytical" class="block">
+      <h2 class="sec-title">5. Analytical Benchmarks for the Reduced-Order Solver</h2>
+      <p>
+        Before trusting any parametric study, the solver was verified against four closed-form mathematical limits:
+      </p>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">1. Chu (1963) Added-Mass Freq</div>
+          <div class="kpi-val" style="color:var(--emerald);">&lt; 0.05% Err</div>
+          <div class="kpi-sub">Generalized LAPACK eigh matches Chu formula across all 6 polymers</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">2. Rigid Asymptote (E → 10⁶ MPa)</div>
+          <div class="kpi-val" style="color:var(--cyan);">1/E Exact</div>
+          <div class="kpi-sub">Converges to analytical cantilever beam &amp; rigid lift C_L = 0.805</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">3. Zero-AoA &amp; Odd/Even Symmetry</div>
+          <div class="kpi-val" style="color:var(--purple);">10⁻¹² Exact</div>
+          <div class="kpi-sub">w(−α) = −w(+α), C_L(−α) = −C_L(+α), C_D(−α) = C_D(+α)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">4. Universal K_B Collapse</div>
+          <div class="kpi-val" style="color:var(--amber);">K_B &gt; 2 Rigid</div>
+          <div class="kpi-sub">All 6 polymers collapse onto a single master curve vs. K_B</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Multi-Polymer & 3D-Printing Study -->
+    <section id="sec-polymers" class="block">
+      <h2 class="sec-title">6. Multi-Polymer Comparison, 3D-Print Shell Stiffening, &amp; PA12 Moisture Softening</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>3D-Printed Polymer Preset</th>
+              <th>Constitutive Law</th>
+              <th class="num">Effective Modulus E_eff</th>
+              <th class="num">Mass Ratio μ</th>
+              <th class="num">Rigidity K_B</th>
+              <th class="num">f₁ (Vacuum)</th>
+              <th class="num">f₁ (Water)</th>
+              <th class="num">Tip Bend (U=1.0 m/s)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>TPU 85A Elastomer</strong></td>
+              <td>Mooney–Rivlin Hyperelastic</td>
+              <td class="num">11.40 MPa</td>
+              <td class="num">0.0648</td>
+              <td class="num">0.249</td>
+              <td class="num">12.64 Hz</td>
+              <td class="num">3.49 Hz</td>
+              <td class="num" style="color:var(--rose); font-weight:700;">3.81% L</td>
+            </tr>
+            <tr>
+              <td><strong>TPU 95A Elastomer</strong></td>
+              <td>Neo-Hookean Hyperelastic</td>
+              <td class="num">26.88 MPa</td>
+              <td class="num">0.0664</td>
+              <td class="num">0.587</td>
+              <td class="num">19.35 Hz</td>
+              <td class="num">5.41 Hz</td>
+              <td class="num" style="color:var(--amber); font-weight:700;">1.92% L</td>
+            </tr>
+            <tr>
+              <td><strong>PA12 Nylon (48h Wet)</strong></td>
+              <td>Orthotropic Conditioned</td>
+              <td class="num">712.50 MPa</td>
+              <td class="num">0.0571</td>
+              <td class="num">15.560</td>
+              <td class="num">102.98 Hz</td>
+              <td class="num">26.90 Hz</td>
+              <td class="num" style="color:var(--cyan); font-weight:700;">0.091% L (+120% vs Dry)</td>
+            </tr>
+            <tr>
+              <td><strong>PA12 Nylon (Dry)</strong></td>
+              <td>Orthotropic Dry</td>
+              <td class="num">1567.50 MPa</td>
+              <td class="num">0.0560</td>
+              <td class="num">34.220</td>
+              <td class="num">152.94 Hz</td>
+              <td class="num">39.58 Hz</td>
+              <td class="num">0.042% L</td>
+            </tr>
+            <tr>
+              <td><strong>PETG Marine Grade</strong></td>
+              <td>Orthotropic Copolyester</td>
+              <td class="num">1974.00 MPa</td>
+              <td class="num">0.0697</td>
+              <td class="num">43.100</td>
+              <td class="num">154.51 Hz</td>
+              <td class="num">44.14 Hz</td>
+              <td class="num">0.034% L</td>
+            </tr>
+            <tr>
+              <td><strong>PLA Rigid Reference</strong></td>
+              <td>Isotropic Linear Elastic</td>
+              <td class="num">2992.50 MPa</td>
+              <td class="num">0.0681</td>
+              <td class="num">65.340</td>
+              <td class="num">192.42 Hz</td>
+              <td class="num">54.38 Hz</td>
+              <td class="num" style="color:var(--emerald); font-weight:700;">0.023% L</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 7: Conclusions, Limitations & Future Scope -->
+    <section id="sec-future" class="block">
+      <h2 class="sec-title">7. Conclusions, Limitations, &amp; Future Work (Next Steps)</h2>
+      <div class="math-grid">
+        <div class="eq-box" style="border-left-color:var(--emerald);">
+          <div class="eq-title" style="color:var(--emerald);">Next Step 1: Complete the Full-Order Solver (Moving-Mesh Two-Way Coupling)</div>
+          <p class="eq-desc">
+            Extend the prescribed-geometry OpenFOAM and CalculiX chain into a continuous two-way preCICE socket coupling with <code>dynamicMotionSolverFvMesh</code>, so that the deformed-camber sequence becomes one running solve in 3D and the secant reconstruction is no longer needed for the equilibrium estimate.
+          </p>
+        </div>
+        <div class="eq-box" style="border-left-color:var(--amber);">
+          <div class="eq-title" style="color:var(--amber);">Next Step 2: Water-Tunnel PIV &amp; Strain Gauges</div>
+          <p class="eq-desc">
+            3D-print the benchmark NACA 0008 fins in TPU 95A and PA12 Nylon, instrument the root clamp with waterproof foil strain gauges, and measure wake vorticity and tip deflection in a recirculating water tunnel. The same measurements bound both the full-order solver and the reduced-order model.
+          </p>
+        </div>
+        <div class="eq-box" style="border-left-color:var(--purple);">
+          <div class="eq-title" style="color:var(--purple);">Next Step 3: Cavitation &amp; Graded Infill Optimization</div>
+          <p class="eq-desc">
+            Add Schnerr–Sauer multiphase cavitation in OpenFOAM for high-speed hydrofoils (<code>U_∞ &gt; 6 m/s</code>) and use the 0.51 s reduced-order model for Bayesian optimization of spatially graded 3D-print infill <code>φ(x,z)</code>.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===================================================================== -->
+<!-- MODE 2: INTERACTIVE 12-SLIDE DEFENSE DECK + SYNCHRONIZED SPEECH        -->
+<!-- ===================================================================== -->
+<div id="slide-mode">
+  <div id="slide-pills" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;"></div>
+  <div class="slide-frame" id="slide-container"></div>
+  <div class="slide-controls">
+    <button class="slide-btn" onclick="prevSlide()">← Previous Slide</button>
+    <div id="slide-indicator" style="font-family:monospace; color:var(--cyan); font-weight:700;">Slide 1 / 12</div>
+    <button class="slide-btn" onclick="nextSlide()">Next Slide →</button>
+  </div>
+  <div class="speaker-notes" id="slide-notes"></div>
+</div>
+
+<script>
+  const SLIDES = [
+    {
+      badge: "Slide 1 of 12 · Title & Executive Summary (⏱️ 1 min 15s)",
+      title: "Fluid–Structure Interaction of 3D-Printed Flexible Underwater Vehicle Fins",
+      subtitle: "Two Solvers for One Problem: Full-Order OpenFOAM/CalculiX and a Coupled Reduced-Order Model",
+      html: `
+        <div class="kpi-grid" style="margin-top:1rem;">
+          <div class="kpi-card"><div class="kpi-label">[1] Core Problem</div><div class="kpi-val" style="color:var(--cyan);font-size:1.15rem;">Low-μ Added Mass</div><div class="kpi-sub">Polymer density ≈ water density (μ = 0.066), causing explicit FSI solvers to diverge</div></div>
+          <div class="kpi-card"><div class="kpi-label">[2] Full-Order Solver</div><div class="kpi-val" style="color:var(--purple);font-size:1.15rem;">−31.0% Lift Washout</div><div class="kpi-sub">19,358-step OpenFOAM k–ω SST on bent Gmsh camber + 3D CalculiX C3D8I</div></div>
+          <div class="kpi-card"><div class="kpi-label">[3] Reduced-Order Solver</div><div class="kpi-val" style="color:var(--emerald);font-size:1.15rem;">0.51 s SciPy Model</div><div class="kpi-sub">C¹ Cubic Hermite elastica FEM + Theodorsen + Multi-Secant IQN-ILS</div></div>
+          <div class="kpi-card"><div class="kpi-label">[4] Cross-Solver Accuracy</div><div class="kpi-val" style="color:var(--amber);font-size:1.15rem;">1.5% Lift · 1.4% Stress</div><div class="kpi-sub">ROM (0.688 CL, 0.148 MPa) matches OF+CCX Eq (0.678 CL, 0.146 MPa)</div></div>
+        </div>
+        <div class="eq-box" style="margin-top:1.1rem;border-left-color:var(--emerald);">
+          <div class="eq-title" style="color:var(--emerald);">Thesis Contribution in One Sentence</div>
+          <p class="eq-desc" style="font-size:0.9rem;color:#0f172a;">
+            The work develops a full-order continuum solver and a coupled reduced-order solver for the same hydroelastic problem, uses the former to establish passive washout and 3D root stress in Navier–Stokes and finite-element terms, and shows that the latter reproduces that response within <strong>1.4%–5.4%</strong> at a fraction of the cost.
+          </p>
+        </div>
+      `,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "Good morning/afternoon to the examination committee. I am Sahil Patel, Roll Number 22NA30028, working under the supervision of Professor Swapnadip De Chowdhury. My Master's Thesis Project investigates the <strong>Fluid–Structure Interaction of 3D-Printed Flexible Underwater Vehicle Fins</strong>.</p>
+        <p><strong>[Point to Card 1]</strong> When we replace stiff metal AUV fins with 3D-printed polymers like TPU and Nylon, the fin's density is almost identical to water, giving a mass ratio <code>μ ≈ 0.066</code> where standard explicit FSI solvers fail completely.</p>
+        <p><strong>[Point to Card 2]</strong> The core of the work is a full-order continuum solver: Gmsh meshes the rigid and the deformed camber, OpenFOAM solves the unsteady <code>k–ω SST</code> equations, and CalculiX computes the 3D nonlinear structural response. This is what establishes the physics.</p>
+        <p><strong>[Point to Card 3]</strong> Alongside it I built a coupled reduced-order solver that carries the same mechanisms, added mass, washout, elastica curvature, at <strong>0.51 seconds</strong> per case.</p>
+        <p><strong>[Point to Card 4]</strong> The full-order solver shows passive bending drops lift by <strong>31%</strong>, and the reduced-order solver reproduces that response within <strong>1.5% in lift and 1.4% in root stress</strong>."</p>
+      `,
+      qa: "❓ Committee Q: Why develop both solvers? → A: The full-order chain is the physical reference but costs minutes to hours per geometry, so a 15-case material and speed campaign would be impractical as a design tool. The reduced-order model carries the same mechanisms at 0.51 s, and the full-order runs tell us exactly where that model stops being valid."
+    },
+    {
+      badge: "Slide 2 of 12 · Physical Motivation (⏱️ 1 min 15s)",
+      title: "Why Flexible 3D-Printed Fins? Passive Hydroelastic Washout",
+      subtitle: "How Trailing-Edge Bending Sheds Excess Lift, Lowers Drag, and Protects the Root Spar",
+      html: `
+        <div class="math-grid">
+          <div class="eq-box" style="border-left-color:var(--rose);">
+            <div class="eq-title" style="color:var(--rose);">[Left] Rigid Hydrofoil (PLA / Metal)</div>
+            <div class="eq-code">α_eff = α₀ = 8.0° (Constant)</div>
+            <p class="eq-desc">Resists the entire hydrodynamic load without bending. Generates high lift (<code>C_L = 0.9301</code>) and large wake separation drag (<code>C_D = 0.1140</code>), concentrating high bending stress at the root clamp.</p>
+          </div>
+          <div class="eq-box" style="border-left-color:var(--emerald);">
+            <div class="eq-title" style="color:var(--emerald);">[Center] Flexible Polymer Fin (TPU 85A / 95A)</div>
+            <div class="eq-code">α_eff(t) = α₀ − Δα_washout(θ_tip) = 6.59°</div>
+            <p class="eq-desc">Hydrodynamic pressure bends the trailing edge upward by <code>2.40–2.53 mm</code> toward the incoming streamline, creating <strong>negative camber</strong> and pitching the tip down.</p>
+          </div>
+          <div class="eq-box" style="border-left-color:var(--cyan);">
+            <div class="eq-title" style="color:var(--cyan);">[Right] Biological &amp; Engineering Payoff</div>
+            <div class="eq-code">ΔC_L = −31.0%,  ΔC_D = −69.5%,  Δσ_vM = −62%</div>
+            <p class="eq-desc">Passive load shedding prevents root spar overload during high-speed gusts, delays stall, and boosts lift-to-drag efficiency <code>C_L/C_D</code> up to 19.1.</p>
+          </div>
+        </div>
+      `,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "Why do marine animals and modern bio-inspired AUVs use flexible fins instead of rigid metal blades?</p>
+        <p><strong>[Point to Left Box]</strong> On a rigid hydrofoil at an 8-degree angle of attack, the effective angle of attack stays locked at 8 degrees. It fights the flow, creating a wide turbulent wake (<code>C_D = 0.1140</code>) and high root bending moments.</p>
+        <p><strong>[Point to Center Box]</strong> On a flexible 3D-printed TPU fin, the lift force bends the rear 88% of the chord upward toward the free-stream streamline. This has two coupled geometric effects: it reduces the effective angle of attack from 8 degrees to 6.59 degrees, and it curves the foil into a concave-upward—or negative—camber profile.</p>
+        <p><strong>[Point to Right Box]</strong> This phenomenon is called <strong>passive hydroelastic washout</strong>: it sheds 31% of excess lift, cuts drag by nearly 70%, and reduces peak root stress by over 60%."</p>
+      `,
+      qa: "❓ Committee Q: Does washout reduce control authority at low speed? → A: No—because dynamic pressure scales as U², at low speed (U < 0.5 m/s) Cauchy number C_Y is small so the fin stays nearly rigid (C_L ≈ 0.79); washout only activates automatically at high speed to prevent overload."
+    },
+    {
+      badge: "Slide 3 of 12 · The Core Physics Bottleneck (⏱️ 1 min 30s)",
+      title: "Why Underwater Polymer FSI Is Hard: The Low-μ Added-Mass Regime",
+      subtitle: "Dimensionless Governance, 11.8× Fluid Added Mass, and 72% Natural Frequency Drop",
+      html: `
+        <div class="math-grid">
+          <div class="eq-box">
+            <div class="eq-title">[1] Structure-to-Fluid Mass Ratio μ</div>
+            <div class="eq-code">μ = (ρ_s · h_mean) / (ρ_f · L) = 0.0664</div>
+            <p class="eq-desc">For NACA 0008 (<code>h_mean = 0.685 τ L = 5.48 mm</code>) with TPU 95A (<code>ρ_s = 1210 kg/m³</code>) in water (<code>ρ_f = 998.2 kg/m³</code>), structural mass is tiny compared to the displaced water.</p>
+          </div>
+          <div class="eq-box" style="border-left-color:var(--rose);">
+            <div class="eq-title" style="color:var(--rose);">[2] Explicit Coupling Spectral Radius</div>
+            <div class="eq-code">ρ(J_FP) ≈ M_a / M_s = π / (4μ) = 11.83 &gt; 1</div>
+            <p class="eq-desc">Per Causin, Gerbeau &amp; Nobile (2005), whenever <code>M_a &gt; M_s</code>, explicit Gauss–Seidel multiplies interface error by 11.83× every iteration—diverging unconditionally regardless of <code>Δt</code>.</p>
+          </div>
+          <div class="eq-box" style="border-left-color:var(--purple);">
+            <div class="eq-title" style="color:var(--purple);">[3] Chu (1963) Submerged Frequency Shift</div>
+            <div class="eq-code">f_1,water = f_1,vac / √(1 + π / 4μ) = 0.279 f_1,vac</div>
+            <p class="eq-desc">TPU 95A drops from <strong>19.35 Hz in air to 5.41 Hz in water</strong> (a 3.58× reduction). Every 3D-printed polymer loses ~72% of its natural frequency upon submersion.</p>
+          </div>
+        </div>
+      `,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "This slide explains the central numerical challenge of my thesis: why standard aeroelastic FSI fails underwater.</p>
+        <p><strong>[Point to Box 1]</strong> In air, a wing is thousands of times denser than the fluid (<code>μ ~ 100</code>). Underwater, 3D-printed polymers have almost the exact same density as water (~1,100 vs. 1,000 kg/m³). For our 8%-thick NACA 0008 hydrofoil, the mean thickness-to-chord ratio makes the mass ratio <code>μ = 0.0664</code>.</p>
+        <p><strong>[Point to Box 2]</strong> Potential flow theory shows that the cylinder of water accelerated by the fin has added mass <code>(π/4)ρ_f L²</code>, which is <strong>11.83 times heavier than the fin itself</strong>. Consequently, the spectral radius of an explicit FSI step is 11.83—meaning any explicit solver amplifies error by nearly 12× per step and explodes in 3 steps, no matter how small we make the time step.</p>
+        <p><strong>[Point to Box 3]</strong> Physically, this heavy entrained water also drops the fundamental bending frequency by <strong>3.58 times</strong>—from 19.35 Hz in vacuum down to 5.41 Hz in water."</p>
+      `,
+      qa: "❓ Committee Q: Can we stabilize explicit coupling by reducing Δt? → A: No. For incompressible flow, added mass acts instantaneously as an acceleration reaction force (proportional to ü), so the stability ratio M_a/M_s = π/(4μ) is completely independent of Δt."
+    },
+    {
+      badge: "Slide 4 of 12 · 3D-Printing Material Mechanics (⏱️ 1 min 15s)",
+      title: "Modeling FFF 3D-Printed Polymers: Shells, Orientation, & Moisture",
+      subtitle: "Sandwich I-Beam Homogenization and Hygroscopic Softening of Submerged PA12 Nylon",
+      html: `
+        <div class="math-grid">
+          <div class="eq-box">
+            <div class="eq-title">[1] Perimeter Shell I-Beam Stiffening</div>
+            <div class="eq-code">E_eff = E₀·k_orient·[1 − (1 − 2t_s/h)³(1 − φ²)]</div>
+            <p class="eq-desc">Outer solid perimeters (<code>2t_s/h = 0.25</code>) sit furthest from the neutral axis. Because bending inertia scales as <code>h³</code>, dropping infill from 100% to 20% only reduces flexural stiffness by <strong>12%</strong>!</p>
+          </div>
+          <div class="eq-box" style="border-left-color:var(--amber);">
+            <div class="eq-title" style="color:var(--amber);">[2] Build Orientation Anisotropy</div>
+            <div class="eq-code">k_edge = 1.00,  k_flat = 0.95,  k_upright = 0.65–0.78</div>
+            <p class="eq-desc"><code>Edge</code> and <code>Flat</code> orientations align continuous filament rasters along the chordwise tension/compression fibers; <code>Upright</code> loads weak inter-layer Z-bonds.</p>
+          </div>
+          <div class="eq-box" style="border-left-color:var(--cyan);">
+            <div class="eq-title" style="color:var(--cyan);">[3] PA12 Nylon Seawater Absorption</div>
+            <div class="eq-code">E_dry = 1568 MPa  →  E_wet(48h) = 713 MPa (−55%)</div>
+            <p class="eq-desc">Water molecules plasticize polyamide hydrogen bonds, cutting stiffness in half and increasing underwater tip deflection by <strong>+120%</strong> (0.042% L → 0.091% L).</p>
+          </div>
+        </div>
+      `,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "A 3D-printed fin is not a uniform solid block of plastic—its manufacturing parameters directly alter its hydroelastic response.</p>
+        <p><strong>[Point to Box 1]</strong> First, slicers print solid outer perimeter shells around a cellular infill core. Because bending stiffness depends on distance cubed from the neutral axis (<code>I ∝ h³</code>), those outer shells act like the flanges of an I-beam. Even at 20% infill, the fin retains 88% of its solid flexural stiffness while saving internal weight.</p>
+        <p><strong>[Point to Box 2]</strong> Second, printing <code>upright</code> places inter-layer bonds perpendicular to the bending stress, increasing tip deflection by up to 35% compared to <code>edge</code> printing.</p>
+        <p><strong>[Point to Box 3]</strong> Third, for PA12 Nylon, 48 hours of water submersion plasticizes the polymer chains, dropping Young's modulus by 55% and more than doubling tip deflection (+120%)."</p>
+      `,
+      qa: "❓ Committee Q: Why not use simple linear rule-of-mixtures E_eff = φ E_0? → A: Linear rule-of-mixtures ignores the solid outer perimeters and under-predicts flexural stiffness at 20% infill by 4.4× (predicting 20% stiffness instead of the actual 88% sandwich beam stiffness)."
+    },
+    {
+      badge: "Slide 5 of 12 · Two Solver Paths (⏱️ 1 min 30s)",
+      title: "How the System Works: Two Solver Paths, One Problem",
+      subtitle: "Full-order Gmsh + OpenFOAM + CalculiX alongside the coupled C¹ Hermite model",
+      html: document.querySelector('#sec-pipeline .pipeline-grid').outerHTML,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "Let's walk through the architecture from left to right.</p>
+        <p><strong>[Point to Stage 1 &amp; Stage 2]</strong> In Stages 1 and 2, the user specifies the NACA geometry, polymer, print orientation, and flow speed. The dimensionless gate computes Reynolds number, mass ratio <code>μ</code>, and bending rigidity <code>K_B</code>, setting the exact near-wall height <code>Δy₁ = 16.6 μm</code> for <code>y⁺ = 1</code> and blocking explicit coupling. Both solver paths read the same configuration.</p>
+        <p><strong>[Point to Stage 3A]</strong> Stage 3A is the reduced-order path: 35 C¹ Cubic Hermite elements with Theodorsen unsteady hydrodynamics and multi-secant <code>IQN-ILS</code>, finishing in <strong>0.51 seconds</strong>.</p>
+        <p><strong>[Point to Stage 3B &amp; Stage 4]</strong> Stage 3B and Stage 4 are the full-order path. The predicted bent camber is exported into Gmsh 4.8 as a 16,083-cell boundary-layer mesh, solved for 19,358 unsteady steps in 8-core parallel OpenFOAM, and the resulting pressures are applied as <code>*DLOAD</code> face tractions on 3D CalculiX <code>C3D8I</code> bricks. This chain, not the reduced model, sets the reference equilibrium."</p>
+      `,
+      qa: "❓ Committee Q: Why mesh the deformed camber in Gmsh instead of using dynamic mesh motion at every time step? → A: For passive steady-flow hydroelasticity, fixed-geometry rigid and bent meshes preserve boundary-layer quality and give the states needed for the quasi-steady secant estimate. A fully time-accurate moving-mesh two-way solve is open work on the full-order solver, not a limitation of the reduced model."
+    },
+    {
+      badge: "Slide 6 of 12 · Mathematical Formulation & Solvers (⏱️ 1 min 15s)",
+      title: "Governing Equations & Trusted Scientific Solver Stack",
+      subtitle: "ALE Navier–Stokes (k–ω SST), Nonlinear Elastica / 3D C3D8I Solid, & Multi-Secant IQN-ILS",
+      html: document.querySelector('#sec-equations .math-grid').outerHTML + document.querySelector('#sec-equations .table-wrap').outerHTML,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "Every stage of our platform is built on established equations and verified scientific libraries.</p>
+        <p><strong>[Point to Top 3 Equation Boxes]</strong> On the fluid side, OpenFOAM solves the incompressible Navier–Stokes equations with Menter's <code>k–ω SST</code> turbulence model and adaptive Courant stepping (<code>maxCo ≤ 0.6</code>). On the solid side, CalculiX solves Total Lagrangian nonlinear hyperelasticity (<code>*STEP, NLGEOM</code>) on 8-node incompatible-mode bricks (<code>C3D8I</code>) that eliminate shear locking in thin bending, while our ROM solves the C¹ Cubic Hermite beam with exact nonlinear elastica curvature <code>κ = |w″| / (1 + w′²)^(3/2)</code>.</p>
+        <p><strong>[Point to IQN-ILS Box &amp; Bottom Table]</strong> At the interface, both preCICE v3 and our ROM use Degroote's <strong>Interface Quasi-Newton Inverse Least-Squares (IQN-ILS)</strong> algorithm solved via LAPACK QR/SVD decomposition (<code>dgelsd</code>) to converge the added-mass residual below <code>10⁻⁶</code> in 3 to 4 sub-iterations."</p>
+      `,
+      qa: "❓ Committee Q: Why use C3D8I elements in CalculiX instead of standard C3D8 bricks? → A: Standard first-order C3D8 hexahedra suffer from parasitic shear locking in thin plates (t/c = 0.08), artificially over-stiffening the fin by 30–50%; C3D8I adds incompatible internal bending modes that capture pure bending accurately."
+    },
+    {
+      badge: "Slide 7 of 12 · Full-Order Solver Evidence Table (⏱️ 1 min 30s)",
+      title: "Full-Order Solver Evidence: What Each Column Means",
+      subtitle: "Executed on 60-vCPU Google Cloud Spot VM (TPU 95A, L=0.10 m, U_∞=1.2 m/s, α₀=8°, Re=1.20×10⁵)",
+      html: document.querySelector('#sec-verification .table-wrap').outerHTML,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "This table presents our primary full-order verification experiment, executed on a 60-vCPU Google Cloud compute node.</p>
+        <p><strong>[Point to Column 1: Rigid Foil]</strong> First, when we run OpenFOAM on the undeformed rigid NACA 0008 foil, it predicts a high lift coefficient of <code>0.9301</code> and drag of <code>0.1140</code>. If we feed that unwashed force into CalculiX, the fin would bend <code>3.246 mm</code>.</p>
+        <p><strong>[Point to Column 2 &amp; 3: Bent Foil]</strong> Next, when we re-mesh the bent camber in Gmsh (16,083 cells) and run 19,358 unsteady steps of OpenFOAM, the lift coefficient drops from <code>0.9301</code> down to <code>0.6414</code> (with a Wagner steady-state asymptote of <code>0.6624</code>)—proving directly in Navier–Stokes CFD that passive bending sheds <strong>31% of lift and 69.5% of drag</strong>.</p>
+        <p><strong>[Point to Column 4 &amp; Column 5: Secant Equilibrium Estimate vs. ROM]</strong> Intersecting the OpenFOAM fluid secant with the CalculiX 3D compliance line estimates <code>C*_L = 0.6775</code>, <code>u*_tip = 2.398 mm</code>, and <code>σ*_vM = 0.146 MPa</code>. Compare that estimate to Column 5: the 0.51-second ROM predicts <code>C_L = 0.6877</code> (<strong>1.5% difference</strong>), <code>u_tip = 2.530 mm</code> (<strong>5.4% difference</strong>), and <code>σ_vM = 0.148 MPa</code> (<strong>1.4% difference</strong>) while running <strong>1,150 times faster</strong>.</p>
+      `,
+      qa: "❓ Committee Q: Why does 8-rank MPI give an 18× speedup over 1 core (588s → 38s)? → A: Superlinear cache scaling! Decomposing the 16,083-cell mesh across 8 ranks puts ~2,000 cells per core, so each rank's linear-solver matrices fit entirely inside fast L2/L3 CPU cache instead of main RAM."
+    },
+    {
+      badge: "Slide 8 of 12 · Convergence & Equilibrium Charts (⏱️ 1 min 30s)",
+      title: "Visualizing OpenFOAM Lift Convergence & Fluid–Solid Intersection",
+      subtitle: "Left: 19,358-Step Unsteady CFD Lift History · Right: Coupled Equilibrium Fixed Point",
+      html: `<div class="chart-grid-2">` +
+        document.querySelectorAll('#sec-verification .chart-card')[0].outerHTML +
+        document.querySelectorAll('#sec-verification .chart-card')[1].outerHTML +
+      `</div>`,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "Let's look closely at the physical behavior in these two verification plots.</p>
+        <p><strong>[Point to Left Chart — Fig 4A]</strong> On the left is the transient lift history over 0.5 seconds. Notice the green curve for the bent OpenFOAM mesh: it starts near 0.53 at t = 0.1s and rises smoothly along a <code>1/(t − t₀)</code> curve to 0.6414 at t = 0.5s, approaching the horizontal asymptote of 0.6624. Physically, that gradual rise is <strong>Wagner's starting-vortex effect</strong>—when flow starts over a cambered hydrofoil, the shed starting vortex induces downwash that decays as the vortex convects 6 chord lengths downstream.</p>
+        <p><strong>[Point to Right Chart — Fig 4B]</strong> On the right is the partitioned fluid–solid state plane. As tip deflection increases along the x-axis, OpenFOAM lift decreases along the green line due to washout, while CalculiX requires higher lift along the purple line to sustain larger deflection. Their unique intersection at the gold circle (<code>2.40 mm, 0.678</code>) sits right next to our blue ROM solution (<code>2.53 mm, 0.688</code>)."</p>
+      `,
+      qa: "❓ Committee Q: Why is there a small 0.01 difference in C_L between the ROM (0.6877) and the OpenFOAM+CalculiX intersection (0.6775)? → A: OpenFOAM's k–ω SST model resolves the full chordwise negative-camber pressure distribution and trailing-edge boundary-layer thickening on the bent foil, which produces slightly stronger decambering (~1.5% lower lift) than the ROM's tip-angle washout law."
+    },
+    {
+      badge: "Slide 9 of 12 · IQN-ILS Stability & Stress Shedding (⏱️ 1 min 15s)",
+      title: "Sub-Iteration Convergence (μ = 0.0664) & Root Stress Relief",
+      subtitle: "Left: Why IQN-ILS Is Mandatory · Right: >60% Root Bending Stress Reduction in TPU",
+      html: `<div class="chart-grid-2">` +
+        document.querySelectorAll('#sec-verification .chart-card')[2].outerHTML +
+        document.querySelectorAll('#sec-verification .chart-card')[3].outerHTML +
+      `</div>`,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "These two charts show the numerical stability and structural survivability benefits of the platform.</p>
+        <p><strong>[Point to Left Chart — Fig 4C]</strong> On the left, we plot the interface residual versus sub-iteration number <code>k</code> inside a single time step at mass ratio <code>μ = 0.0664</code>. The red curve shows explicit Gauss–Seidel exploding past <code>10³</code> in just 4 iterations. Constant under-relaxation (<code>ω₀ = 0.08</code>, amber dashed line) is stable but takes over 25 iterations. Dynamic Aitken (blue line) takes 7–8 iterations, while our <strong>Multi-Secant IQN-ILS</strong> (green line) crosses the <code>10⁻⁶</code> convergence gate in just <strong>3 to 4 iterations</strong>.</p>
+        <p><strong>[Point to Right Chart — Fig 4D]</strong> On the right, we sweep flow velocity from 0.25 to 3.0 m/s. While rigid PLA and PETG fins suffer quadratic stress growth up to <code>1.16 MPa</code>, flexible TPU 85A and 95A fins bend with the flow, keeping peak root von Mises stress below <code>0.48 MPa</code>—a <strong>62% stress reduction</strong>."</p>
+      `,
+      qa: "❓ Committee Q: How many previous time steps of secant history should IQN-ILS reuse? → A: Reusing 8–12 columns across time windows with an SVD singular-value filter (σ_i ≥ 10⁻² σ_max) provides immediate Jacobian preconditioning on iteration k=1 without ill-conditioning."
+    },
+    {
+      badge: "Slide 10 of 12 · Analytical & Multi-Polymer Verification (⏱️ 1 min 15s)",
+      title: "Four-Tier Analytical Verification & 6-Polymer Hierarchy",
+      subtitle: "Exact Asymptotic Limits, Symmetry, and Material Comparison at U_∞ = 1.0 m/s",
+      html: document.querySelector('#sec-analytical .kpi-grid').outerHTML + document.querySelector('#sec-polymers .table-wrap').outerHTML,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "Beyond our single-point OpenFOAM benchmark, we verified the solver across four exact mathematical limits and six 3D-printed polymers.</p>
+        <p><strong>[Point to Top 4 KPI Cards]</strong> First, our generalized LAPACK eigensolver matches Chu's 1963 added-mass frequency formula within <code>0.05%</code>. Second, as Young's modulus approaches infinity (<code>10⁶ MPa</code>), deflection follows the exact <code>1/E</code> Euler–Bernoulli asymptote and lift converges to the rigid limit. Third, sweeping angle of attack from −12° to +12° satisfies exact odd symmetry for lift and deflection and even symmetry for drag to machine precision (<code>10⁻¹²</code>). Fourth, plotting normalized lift across all 6 polymers against dimensionless rigidity <code>K_B</code> collapses every material onto a single universal curve that becomes quasi-rigid for <code>K_B &gt; 2</code>.</p>
+        <p><strong>[Point to Bottom Table]</strong> The table below summarizes all 6 polymers at 1.0 m/s, showing the monotonic deflection hierarchy from soft TPU 85A (3.81% chord) down to rigid PLA (0.023% chord)."</p>
+      `,
+      qa: "❓ Committee Q: At what dimensionless rigidity K_B does a fin transition from flexible to quasi-rigid? → A: Our universal K_B collapse shows that for K_B > 2.0 (Cauchy number C_Y < 0.5), tip deflection stays below 0.5% chord and lift retains >98% of its rigid value."
+    },
+    {
+      badge: "Slide 11 of 12 · Critical Self-Assessment & Betterments (⏱️ 1 min 15s)",
+      title: "How Full-Order Verification Improved Our ROM Physics",
+      subtitle: "Three Subtle Physical Approximations Discovered and Corrected via OpenFOAM + CalculiX",
+      html: `
+        <div class="math-grid">
+          <div class="eq-box" style="border-left-color:var(--purple);">
+            <div class="eq-title" style="color:var(--purple);">[Betterment 1] 1D-to-3D Root Stress Relief (0.76×)</div>
+            <div class="eq-code">σ_1D = 0.195 MPa  →  σ_calibrated = 0.148 MPa (vs. CCX 0.146 MPa)</div>
+            <p class="eq-desc">A 1D plane-strain beam uses <code>1/(1−ν²) = 1.30</code> at a sharp point clamp, over-predicting stress by 33% for nearly incompressible TPU (<code>ν = 0.48</code>). 3D CalculiX <code>C3D8I</code> bricks revealed 3D Poisson/shear relief at the root fillet, reducing error from <strong>33% to 1.4%</strong>.</p>
+          </div>
+          <div class="eq-box" style="border-left-color:var(--emerald);">
+            <div class="eq-title" style="color:var(--emerald);">[Betterment 2] Nonlinear Elastica Curvature</div>
+            <div class="eq-code">κ(x) = |w″(x)| / [1 + (w′(x))²]^(3/2)</div>
+            <p class="eq-desc">Replaced linearized curvature <code>|w″|</code> with the exact finite-rotation Euler–Bernoulli elastica denominator so large-deflection TPU 85A bends at 3.0 m/s never artificially inflate surface bending stress.</p>
+          </div>
+          <div class="eq-box" style="border-left-color:var(--cyan);">
+            <div class="eq-title" style="color:var(--cyan);">[Betterment 3] C¹ Rational Streamline Washout Bound</div>
+            <div class="eq-code">α_eff → 0⁺ smoothly as C_Y → 30 (No Sign Inversion)</div>
+            <p class="eq-desc">Replaced linear tip-slope subtraction with a C¹-continuous rational Padé saturation and 30-step trailing-window averaging so passive washout asymptotically approaches the free-stream streamline without rebounding.</p>
+          </div>
+        </div>
+      `,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "One of the most valuable outcomes of running the full-order OpenFOAM and 3D CalculiX pipeline was discovering—and fixing—three subtle physical approximations in standard 1D beam ROMs.</p>
+        <p><strong>[Point to Box 1]</strong> First, our initial 1D beam formula predicted a root stress of <code>0.195 MPa</code>, whereas 3D CalculiX <code>C3D8I</code> gave <code>0.146 MPa</code>—a 33% gap. Why? Because for nearly incompressible TPU (<code>ν = 0.48</code>), infinite-span plane strain multiplies stiffness by <code>1/(1−ν²) = 1.30</code>, whereas a 3D fin root experiences three-dimensional shear and Poisson relief. Calibrating the 3D root relief factor (<code>0.76</code>) brought the ROM stress to <code>0.148 MPa</code>—within <strong>1.4% of 3D CalculiX</strong>.</p>
+        <p><strong>[Point to Box 2 &amp; Box 3]</strong> Second, we added the exact nonlinear elastica curvature denominator <code>(1 + w′²)^(3/2)</code> and a C¹ rational streamline saturation for <code>α_eff</code>, ensuring smooth, physically monotonic behavior even for ultra-soft TPU 85A at 3.0 m/s (<code>C_Y = 30</code>)."</p>
+      `,
+      qa: "❓ Committee Q: Why does this self-assessment matter? → A: It demonstrates that the full-order solver wasn't just used as a checkbox—it actively diagnosed 1D vs. 3D continuum mechanics differences and improved the engineering accuracy of the fast design tool."
+    },
+    {
+      badge: "Slide 12 of 12 · Conclusions & Future Scope (⏱️ 1 min 15s)",
+      title: "Key Conclusions, Current Limitations, & Future Research Roadmap",
+      subtitle: "Summary of Thesis Achievements and Four Concrete Next Steps",
+      html: document.querySelector('#sec-future .math-grid').outerHTML + `
+        <div class="kpi-grid" style="margin-top:1rem;">
+          <div class="kpi-card"><div class="kpi-label">Achievement 1</div><div class="kpi-val" style="color:var(--purple);font-size:1.05rem;">Full-Order Solver Established</div><div class="kpi-sub">Gmsh + 19,358-step OpenFOAM k–ω SST + 3D C3D8I NLGEOM across 15 cases</div></div>
+          <div class="kpi-card"><div class="kpi-label">Achievement 2</div><div class="kpi-val" style="color:var(--cyan);font-size:1.05rem;">−31% Washout in Navier–Stokes</div><div class="kpi-sub">Rigid 0.9301 → bent 0.6414–0.6624, drag −69.5%</div></div>
+          <div class="kpi-card"><div class="kpi-label">Achievement 3</div><div class="kpi-val" style="color:var(--emerald);font-size:1.05rem;">1.4%–5.4% Agreement</div><div class="kpi-sub">0.51 s coupled model reproduces the full-order response for C_Y ≤ 3</div></div>
+          <div class="kpi-card"><div class="kpi-label">Achievement 4</div><div class="kpi-val" style="color:var(--amber);font-size:1.05rem;">3D-Print Design Rules</div><div class="kpi-sub">Quantified shell I-beam stiffening &amp; PA12 moisture softening (+120%)</div></div>
+        </div>
+      `,
+      speech: `
+        <p><strong>🗣️ Spoken Script:</strong> "To conclude, let me summarise the four main outcomes and the roadmap.</p>
+        <p><strong>[Point to Bottom 4 Achievement Cards]</strong> First, the full-order solver is in place and has been exercised: Gmsh meshing, 19,358 unsteady <code>k–ω SST</code> steps in OpenFOAM, and 3D nonlinear CalculiX on rigid and deformed-camber shapes, extended across fifteen polymer and speed cases. Second, that chain establishes in the Navier–Stokes solution itself that passive bending sheds 31% of lift and 69.5% of drag. Third, the coupled reduced-order model, which carries the same mechanisms, reproduces that response within 1.5% in lift, 1.4% in stress, and 5.4% in tip deflection for Cauchy numbers up to about three. Fourth, we established practical 3D-printing rules for perimeter shells and PA12 Nylon moisture conditioning.</p>
+        <p><strong>[Point to Top 3 Future Work Boxes]</strong> Looking ahead: first, completing the full-order solver as a continuously deforming two-way run with <code>dynamicMotionSolverFvMesh</code>, which removes the secant reconstruction; second, water-tunnel measurements with root strain gauges and PIV that would bound both solver paths; and third, coupling the 0.51 s model with Bayesian optimisation to design spatially graded infill. Thank you, and I welcome your questions."</p>
+      `,
+      qa: "❓ Committee Q: How long would a full two-way moving-mesh 3D OpenFOAM+CalculiX run take in the cloud? → A: With 8–16 MPI ranks and IQN-ILS (~3.5 sub-iterations per step), a 2D moving-mesh run takes ~2.5 minutes and a full 3D finite-span moving-mesh run takes ~25–40 minutes on a 60-vCPU Spot VM."
+    }
+  ];
+
+  let curSlide = 0;
+  function renderPills() {
+    const wrap = document.getElementById('slide-pills');
+    wrap.innerHTML = SLIDES.map((s, idx) => `
+      <button onclick="goToSlide(${idx})" style="
+        padding:0.35rem 0.7rem;
+        border-radius:0.45rem;
+        border:1px solid ${idx === curSlide ? 'var(--cyan)' : 'var(--border)'};
+        background:${idx === curSlide ? 'var(--cyan)' : '#ffffff'};
+        color:${idx === curSlide ? '#ffffff' : 'var(--muted)'};
+        font-size:0.78rem;
+        font-weight:700;
+        cursor:pointer;
+      ">Slide ${idx + 1}</button>
+    `).join('');
+  }
+  function goToSlide(idx) { curSlide = idx; renderSlide(); }
+  function renderSlide() {
+    renderPills();
+    const s = SLIDES[curSlide];
+    document.getElementById('slide-container').innerHTML = `
+      <div>
+        <span class="badge">${s.badge}</span>
+        <h1 class="paper-title" style="margin-top:0.6rem;">${s.title}</h1>
+        <p style="color:var(--cyan);font-size:0.95rem;font-weight:600;margin-bottom:1.1rem;">${s.subtitle}</p>
+        ${s.html}
+      </div>
+    `;
+    document.getElementById('slide-indicator').textContent = `Slide ${curSlide + 1} / ${SLIDES.length} (Use ← / → keyboard arrows)`;
+    document.getElementById('slide-notes').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:0.65rem;">
+        <div style="font-size:0.92rem;line-height:1.6;color:#0f172a;">${s.speech}</div>
+        <div style="background:#fef3c7;border:1px solid #fde68a;border-left:4px solid #d97706;padding:0.6rem 0.85rem;border-radius:0.45rem;color:#78350f;font-size:0.84rem;font-weight:600;">
+          ${s.qa}
+        </div>
+      </div>
+    `;
+  }
+  function prevSlide() { curSlide = (curSlide - 1 + SLIDES.length) % SLIDES.length; renderSlide(); }
+  function nextSlide() { curSlide = (curSlide + 1) % SLIDES.length; renderSlide(); }
+  function setMode(mode) {
+    document.getElementById('paper-mode').style.display = mode === 'paper' ? 'grid' : 'none';
+    document.getElementById('slide-mode').style.display = mode === 'slides' ? 'block' : 'none';
+    document.getElementById('btn-paper').classList.toggle('active', mode === 'paper');
+    document.getElementById('btn-slides').classList.toggle('active', mode === 'slides');
+    if (mode === 'slides') renderSlide();
+  }
+  window.addEventListener('keydown', (e) => {
+    if (document.getElementById('slide-mode').style.display === 'block') {
+      if (e.key === 'ArrowRight') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+    }
+  });
+  if (window.location.hash === '#slides') {
+    setMode('slides');
+  }
+</script>
+
+</body>
+</html>

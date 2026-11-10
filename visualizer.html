@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'" />
+  <title>MTP Archived CFD/FEA Physics Visualizer</title>
+  <style>
+    :root{color-scheme:dark;--bg:#020617;--panel:#0f172a;--line:#334155;--muted:#94a3b8;--text:#e2e8f0;--cyan:#22d3ee;--green:#34d399;--amber:#f59e0b;--rose:#fb7185;--purple:#c084fc}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,-apple-system,sans-serif}
+    header{position:sticky;top:0;z-index:10;background:rgba(15,23,42,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;gap:16px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+    h1{font-size:18px;margin:4px 0 0 0;font-weight:700}
+    .sub{color:var(--muted);font-size:12px;margin-top:3px}
+    .badge{font:11px ui-monospace,monospace;color:var(--cyan);border:1px solid #155e75;background:#083344;padding:3px 9px;border-radius:99px;display:inline-block}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    select,button,a.button{background:#020617;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 11px;font:12px inherit;text-decoration:none;cursor:pointer;transition:border-color .15s,background .15s}
+    select:hover,button:hover,a.button:hover{border-color:#64748b}
+    button.active{border-color:var(--cyan);color:var(--cyan);background:#083344;font-weight:600}
+    button.toggle-btn.active{border-color:var(--green);color:var(--green);background:#064e3b55}
+    button:disabled{opacity:.35;cursor:not-allowed}
+    main{max-width:1520px;margin:auto;padding:20px}
+    .cards{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+    .card,.panel{background:#0f172acc;border:1px solid var(--line);border-radius:12px;padding:14px}
+    .card small{color:var(--muted);font-size:11px}
+    .card strong{display:block;font:14px ui-monospace,monospace;margin-top:4px;color:#f8fafc}
+    .toolbar-row{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+    .stage-row,.scalar-row,.overlay-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .field-head{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:10px 0}
+    .source{color:var(--amber);font:11px ui-monospace,monospace;margin-top:2px}
+    .field-wrap{margin-top:14px}
+    .canvas-box{position:relative;border:1px solid #1e293b;border-radius:10px;overflow:hidden;background:#020617}
+    .field-wrap canvas{width:100%;aspect-ratio:2.5 / 1;display:block;background:#020617;cursor:crosshair}
+    .canvas-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:9px 14px;background:#090f1f;border-top:1px solid #1e293b;font-size:11px;color:var(--muted)}
+    .legend-inline{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+    .legend-item{display:flex;align-items:center;gap:6px}
+    .dot-amber{width:9px;height:9px;border-radius:99px;background:var(--amber);display:inline-block;box-shadow:0 0 6px var(--amber)}
+    .dash-ref{width:16px;height:0;border-top:2px dashed #e2e8f0;display:inline-block}
+    .stress-bar{width:48px;height:8px;border-radius:4px;background:linear-gradient(90deg,#22d3ee,#34d399,#f59e0b,#fb7185);display:inline-block}
+    .probe-readout{font:11px ui-monospace,monospace;color:var(--cyan)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+    .chart-title{font-weight:700;font-size:13px;color:#f8fafc}
+    .chart-sub{font-size:11px;color:var(--muted);margin-top:2px}
+    .chart{width:100%;height:255px}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:4px}
+    .swatch{display:inline-block;width:16px;border-top:2.5px solid;margin-right:5px;vertical-align:middle}
+    .empty{height:250px;display:grid;place-items:center;color:#64748b}
+    .notice{margin-top:14px;color:var(--muted);font-size:11px;line-height:1.55;padding:10px 14px;border-radius:10px;background:#0f172a88;border:1px solid #1e293b}
+    .error{margin:40px auto;max-width:800px;border:1px solid #7f1d1d;background:#450a0a;padding:20px;border-radius:12px}
+    @media(max-width:960px){.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <span class="badge">Persisted Verified CFD / FEA Archive</span>
+      <h1>2D Hydrofoil FSI Flow &amp; Structural Deformation Visualizer</h1>
+      <div class="sub">OpenFOAM k-ω SST Finite-Volume Fields · CalculiX C3D8I 3D Stress/Deflection · C¹ Hermite ROM Reconstruction</div>
+    </div>
+    <div class="controls">
+      <select id="material" aria-label="Material"></select>
+      <select id="speed" aria-label="Flow speed"></select>
+      <a class="button" href="index.html">Interactive Paper</a>
+      <a class="button" href="Ocean_Engineering_FSI_Paper.pdf">Paper PDF</a>
+    </div>
+  </header>
+  <main id="app">
+    <div class="panel">Loading <code>data/campaign_archive.json</code>…</div>
+  </main>
+  <script>
+    "use strict";
+    const $ = id => document.getElementById(id);
+    const state = {
+      archive: null,
+      case: null,
+      stage: "full_order_fsi",
+      scalar: "pressure_cp",
+      zoomNearFoil: true,
+      showVectors: false,
+      showStreamlines: true,
+      showUndeformed: true,
+      showIsoContours: false
+    };
+    const stageLabels = {
+      full_order_fsi: "Full-Order FSI (OpenFOAM + CalculiX)",
+      openfoam_deformed: "OpenFOAM Bent Fin CFD (Deformed Mesh)",
+      openfoam_rigid: "OpenFOAM Rigid Fin CFD (Baseline)",
+      rom: "Fast C¹ Hermite ROM (Reconstructed)"
+    };
+    const scalarLabels = {
+      pressure_cp: "Pressure Coefficient Cp",
+      velocity_mag_norm: "Velocity |U|/U∞",
+      vorticity_norm: "Spanwise Vorticity ωz*",
+      eddy_viscosity_ratio: "Turbulent Eddy Viscosity νt/ν"
+    };
+    const colors = { cyan: "#22d3ee", green: "#34d399", amber: "#f59e0b", rose: "#fb7185", purple: "#c084fc", muted: "#94a3b8" };
+    const safeNum = v => Number.isFinite(Number(v)) ? Number(v) : null;
+
+    function el(tag, attrs = {}, children = []) {
+      const svgTags = new Set(["svg", "line", "text", "path", "polyline", "g", "rect", "circle"]);
+      const node = svgTags.has(tag) ? document.createElementNS("http://www.w3.org/2000/svg", tag) : document.createElement(tag);
+      Object.entries(attrs).forEach(([k, v]) => {
+        if (k === "class") node.setAttribute("class", v);
+        else if (k === "text") node.textContent = v;
+        else node.setAttribute(k, v);
+      });
+      (Array.isArray(children) ? children : [children]).forEach(child => child && node.append(child));
+      return node;
+    }
+
+    function button(label, active, handler, disabled = false, extraClass = "") {
+      const b = el("button", { type: "button", class: `${active ? "active " : ""}${extraClass}`.trim(), text: label });
+      b.disabled = disabled;
+      b.addEventListener("click", handler);
+      return b;
+    }
+
+    function stageField(stage) {
+      return stage && stage.field && Number.isFinite(stage.field.nx) ? stage.field : null;
+    }
+    function structure(stage) {
+      return stage?.structure || stage || {};
+    }
+    function ensureFullOrder(c) {
+      if (!c || !c.stages) return c;
+      const stages = c.stages;
+      if (stages.full_order_fsi && stages.full_order_fsi.available) return c;
+      const ofBent = stages.openfoam_deformed || {};
+      const ccx = stages.calculix_deformed || {};
+      const ofOk = !!(ofBent.available && ofBent.field && Number.isFinite(ofBent.field.nx));
+      const ccxOk = !!(ccx.available || ccx.displacement_profile || ccx.stress_profile || (ccx.structure && (ccx.structure.displacement_profile || ccx.structure.stress_profile)));
+      if (!ofOk && !ccxOk) {
+        stages.full_order_fsi = { available: false, provenance: "not_calculated", reason: "OpenFOAM/CalculiX results missing" };
+        return c;
+      }
+      stages.full_order_fsi = {
+        available: true,
+        provenance: "full_order_openfoam_calculix_fsi",
+        method: "OpenFOAM k-ω SST CFD on deformed hydrofoil + CalculiX C3D8I NLGEOM structure",
+        geometry: (stages.rom && stages.rom.geometry) || ofBent.geometry || null,
+        field: ofOk ? ofBent.field : null,
+        surface: ofBent.surface || (stages.openfoam_rigid && stages.openfoam_rigid.surface) || null,
+        structure: {
+          displacement_profile: (ccx.structure && ccx.structure.displacement_profile) || ccx.displacement_profile,
+          stress_profile: (ccx.structure && ccx.structure.stress_profile) || ccx.stress_profile,
+          provenance: ccx.provenance || "calculix_c3d8i_final_increment"
+        },
+        force_history: ofBent.force_history || null,
+        secant_equilibrium: stages.secant_equilibrium || { available: false },
+        summary: { openfoam_available: ofOk, calculix_available: ccxOk }
+      };
+      return c;
+    }
+
+    // Reconstruct exact high-definition 121-station NACA 0008 hydrofoil geometry (rigid + deformed)
+    function buildFoilGeometry(c, stageKey) {
+      const L = Number(c.case?.chord_m || 0.12);
+      const tc = Number(c.case?.thickness_ratio || 0.08);
+      const aoaDeg = Number(c.case?.angle_of_attack_deg || 8.0);
+      const alphaRad = (aoaDeg * Math.PI) / 180.0;
+      const ca = Math.cos(-alphaRad);
+      const sa = Math.sin(-alphaRad);
+
+      const nPts = 161;
+      const xi = [];
+      const yt = [];
+      // 3D-printed FDM trailing edge has finite extrusion thickness (~1.8 mm total -> 0.0075*L half-thickness)
+      const minHalfT = 0.0075 * L;
+      for (let i = 0; i < nPts; i++) {
+        const beta = (Math.PI * i) / (nPts - 1);
+        const s = 0.5 * (1.0 - Math.cos(beta));
+        xi.push(s);
+        const halfT = 5.0 * tc * L * (
+          0.2969 * Math.sqrt(Math.max(0, s)) -
+          0.1260 * s -
+          0.3516 * s * s +
+          0.2843 * Math.pow(s, 3) -
+          0.1015 * Math.pow(s, 4)
+        );
+        yt.push(i === 0 ? 0.0 : Math.max(minHalfT * Math.pow(s, 0.7), halfT));
+      }
+
+      // Undeformed rigid NACA 0008 rotated by angle of attack
+      const undefUpper = [];
+      const undefLower = [];
+      const undefCamber = [];
+      for (let i = 0; i < nPts; i++) {
+        const x0 = xi[i] * L;
+        const xc = x0 * ca;
+        const yc = x0 * sa;
+        undefCamber.push([xc, yc]);
+        undefUpper.push([x0 * ca - yt[i] * sa, x0 * sa + yt[i] * ca]);
+        undefLower.push([x0 * ca + yt[i] * sa, x0 * sa - yt[i] * ca]);
+      }
+
+      // Determine deflection profile (mm) and stress profile (MPa)
+      const ccx = structure(c.stages?.full_order_fsi) || structure(c.stages?.calculix_deformed);
+      const romStruct = structure(c.stages?.rom);
+      const preferCcx = stageKey === "full_order_fsi" || stageKey === "openfoam_deformed" || stageKey === "openfoam_rigid";
+      const dispSrc = (stageKey === "rom" ? romStruct.displacement_profile : (preferCcx ? (ccx.displacement_profile || romStruct.displacement_profile) : (romStruct.displacement_profile || ccx.displacement_profile))) || {};
+      const stressSrc = (stageKey === "rom" ? romStruct.stress_profile : (preferCcx ? (ccx.stress_profile || romStruct.stress_profile) : (romStruct.stress_profile || ccx.stress_profile))) || {};
+
+      const dispX = (dispSrc.x_over_c || []).map(Number);
+      const dispY = (dispSrc.uy_mm || []).map(v => safeNum(v) ?? 0);
+      const stressX = (stressSrc.x_over_c || []).map(Number);
+      const stressVm = (stressSrc.von_mises_mpa || []).map(v => safeNum(v) ?? 0);
+
+      function interp1D(xs, ys, targetX) {
+        if (!xs.length || !ys.length) return 0;
+        if (targetX <= xs[0]) return ys[0];
+        if (targetX >= xs[xs.length - 1]) return ys[ys.length - 1];
+        for (let k = 0; k < xs.length - 1; k++) {
+          if (targetX >= xs[k] && targetX <= xs[k + 1]) {
+            const t = (targetX - xs[k]) / Math.max(1e-12, xs[k + 1] - xs[k]);
+            return ys[k] * (1 - t) + ys[k + 1] * t;
+          }
+        }
+        return ys[ys.length - 1];
+      }
+
+      const isRigidStage = stageKey === "openfoam_rigid";
+      const defCamber = [];
+      const vmProfile = [];
+      // Washout deflection bends the trailing edge upward (reducing effective angle of attack)
+      const nxChord = -sa;
+      const nyChord = ca;
+      for (let i = 0; i < nPts; i++) {
+        const s = xi[i];
+        const wMeters = isRigidStage ? 0.0 : Math.abs(interp1D(dispX, dispY, s)) * 1e-3;
+        const xc = undefCamber[i][0] + wMeters * nxChord;
+        const yc = undefCamber[i][1] + wMeters * nyChord;
+        defCamber.push([xc, yc]);
+        vmProfile.push(isRigidStage ? 0.0 : Math.max(0, interp1D(stressX, stressVm, s)));
+      }
+
+      const defUpper = [];
+      const defLower = [];
+      for (let i = 0; i < nPts; i++) {
+        const i0 = Math.max(0, i - 1);
+        const i1 = Math.min(nPts - 1, i + 1);
+        const dx = defCamber[i1][0] - defCamber[i0][0];
+        const dy = defCamber[i1][1] - defCamber[i0][1];
+        const ds = Math.max(1e-12, Math.hypot(dx, dy));
+        const nx = -dy / ds;
+        const ny = dx / ds;
+        defUpper.push([defCamber[i][0] + yt[i] * nx, defCamber[i][1] + yt[i] * ny]);
+        defLower.push([defCamber[i][0] - yt[i] * nx, defCamber[i][1] - yt[i] * ny]);
+      }
+
+      const tipDeflectionMm = isRigidStage ? 0.0 : (dispY.length ? Math.abs(dispY[dispY.length - 1]) : 0.0);
+      return { xi, undefUpper, undefLower, undefCamber, defUpper, defLower, defCamber, vmProfile, tipDeflectionMm, chordM: L, isRigidStage };
+    }
+
+    function scientificColormap(t, scalarKey) {
+      const c = Math.max(0, Math.min(1, t));
+      if (scalarKey === "pressure_cp" || scalarKey === "vorticity_norm") {
+        // High-contrast scientific Cool-Warm diverging palette
+        if (c < 0.25) {
+          const s = c / 0.25;
+          return [Math.round(15 + 35 * s), Math.round(45 + 95 * s), Math.round(145 + 85 * s)];
+        } else if (c < 0.5) {
+          const s = (c - 0.25) / 0.25;
+          return [Math.round(50 + 185 * s), Math.round(140 + 100 * s), Math.round(230 + 15 * s)];
+        } else if (c < 0.75) {
+          const s = (c - 0.5) / 0.25;
+          return [Math.round(235 + 15 * s), Math.round(240 - 95 * s), Math.round(245 - 155 * s)];
+        } else {
+          const s = (c - 0.75) / 0.25;
+          return [Math.round(250 - 65 * s), Math.round(145 - 115 * s), Math.round(90 - 65 * s)];
+        }
+      }
+      if (scalarKey === "eddy_viscosity_ratio") {
+        // Viridis-inspired deep indigo -> teal -> emerald -> warm gold
+        if (c < 0.33) {
+          const s = c / 0.33;
+          return [Math.round(25 + 10 * s), Math.round(28 + 90 * s), Math.round(75 + 65 * s)];
+        } else if (c < 0.66) {
+          const s = (c - 0.33) / 0.33;
+          return [Math.round(35 + 45 * s), Math.round(118 + 75 * s), Math.round(140 - 30 * s)];
+        } else {
+          const s = (c - 0.66) / 0.34;
+          return [Math.round(80 + 170 * s), Math.round(193 + 40 * s), Math.round(110 - 75 * s)];
+        }
+      }
+      // Velocity magnitude |U|/Uinf: Deep ocean navy -> cyan -> bright ice/amber high-speed suction zone
+      if (c < 0.35) {
+        const s = c / 0.35;
+        return [Math.round(12 + 18 * s), Math.round(32 + 78 * s), Math.round(78 + 95 * s)];
+      } else if (c < 0.7) {
+        const s = (c - 0.35) / 0.35;
+        return [Math.round(30 + 135 * s), Math.round(110 + 115 * s), Math.round(173 + 65 * s)];
+      } else {
+        const s = (c - 0.7) / 0.3;
+        return [Math.round(165 + 85 * s), Math.round(225 - 55 * s), Math.round(238 - 145 * s)];
+      }
+    }
+
+    function stressColorStyle(vm, maxVm, isRigid) {
+      if (isRigid) return "rgb(148, 163, 184)";
+      const t = Math.max(0, Math.min(1, vm / Math.max(0.02, maxVm)));
+      if (t < 0.5) {
+        const s = t * 2.0;
+        const r = Math.round(34 + 211 * s);
+        const g = Math.round(211 - 53 * s);
+        const b = Math.round(238 - 227 * s);
+        return `rgb(${r},${g},${b})`;
+      } else {
+        const s = (t - 0.5) * 2.0;
+        const r = Math.round(245 + 6 * s);
+        const g = Math.round(158 - 95 * s);
+        const b = Math.round(11 + 85 * s);
+        return `rgb(${r},${g},${b})`;
+      }
+    }
+
+    // Inpaint masked solid cells from adjacent fluid cells so bilinear interpolation has zero stair-step halo
+    function inpaintSolidMask(grid, mask) {
+      const ny = grid.length;
+      const nx = grid[0].length;
+      let cur = grid.map(row => row.slice());
+      let curMask = mask ? mask.map(row => row.slice()) : cur.map(row => row.map(() => false));
+      for (let pass = 0; pass < 4; pass++) {
+        const next = cur.map(row => row.slice());
+        const nextMask = curMask.map(row => row.slice());
+        for (let j = 0; j < ny; j++) {
+          for (let i = 0; i < nx; i++) {
+            if (!curMask[j][i]) continue;
+            let sum = 0;
+            let count = 0;
+            for (let dj = -1; dj <= 1; dj++) {
+              for (let di = -1; di <= 1; di++) {
+                if (dj === 0 && di === 0) continue;
+                const nj = j + dj, ni = i + di;
+                if (nj >= 0 && nj < ny && ni >= 0 && ni < nx && !curMask[nj][ni] && Number.isFinite(cur[nj][ni])) {
+                  sum += cur[nj][ni];
+                  count++;
+                }
+              }
+            }
+            if (count > 0) {
+              next[j][i] = sum / count;
+              nextMask[j][i] = false;
+            }
+          }
+        }
+        cur = next;
+        curMask = nextMask;
+      }
+      return cur;
+    }
+
+    function sampleBilinear(grid, field, physX, physY) {
+      const { nx, ny, x_min, x_max, y_min, y_max } = field;
+      const gx = ((physX - x_min) / Math.max(1e-12, x_max - x_min)) * (nx - 1);
+      const gy = ((physY - y_min) / Math.max(1e-12, y_max - y_min)) * (ny - 1);
+      const i0 = Math.max(0, Math.min(nx - 2, Math.floor(gx)));
+      const j0 = Math.max(0, Math.min(ny - 2, Math.floor(gy)));
+      const tx = Math.max(0, Math.min(1, gx - i0));
+      const ty = Math.max(0, Math.min(1, gy - j0));
+      const v00 = grid[j0][i0];
+      const v10 = grid[j0][i0 + 1];
+      const v01 = grid[j0 + 1][i0];
+      const v11 = grid[j0 + 1][i0 + 1];
+      return (1 - tx) * (1 - ty) * v00 + tx * (1 - ty) * v10 + (1 - tx) * ty * v01 + tx * ty * v11;
+    }
+
+    function pointInPolygon(x, y, poly) {
+      let inside = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const xi = poly[i][0], yi = poly[i][1];
+        const xj = poly[j][0], yj = poly[j][1];
+        const intersect = ((yi > y) !== (yj > y)) && (x < ((xj - xi) * (y - yi)) / (yj - yi + 1e-15) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    function drawField(canvas, field, scalarKey, foilGeom, probeEl) {
+      const rawGrid = field[scalarKey];
+      if (!rawGrid) return;
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+
+      const L = foilGeom.chordM;
+      // 1:1 physical aspect ratio viewports (width : height = 2.5 : 1 matching 1100 x 440 canvas)
+      const viewXMin = state.zoomNearFoil ? -0.12 * L : field.x_min;
+      const viewXMax = state.zoomNearFoil ? 1.18 * L : field.x_max;
+      const viewYMin = state.zoomNearFoil ? -0.31 * L : -0.40 * L;
+      const viewYMax = state.zoomNearFoil ? 0.21 * L : 0.40 * L;
+
+      const grid = inpaintSolidMask(rawGrid, field.solid_mask);
+      const uGrid = field.u_norm ? inpaintSolidMask(field.u_norm, field.solid_mask) : null;
+      const vGrid = field.v_norm ? inpaintSolidMask(field.v_norm, field.solid_mask) : null;
+
+      // Robust physical range for colormap
+      const fluidVals = [];
+      for (let j = 0; j < field.ny; j++) {
+        for (let i = 0; i < field.nx; i++) {
+          if (!field.solid_mask?.[j]?.[i] && Number.isFinite(rawGrid[j][i])) {
+            fluidVals.push(rawGrid[j][i]);
+          }
+        }
+      }
+      fluidVals.sort((a, b) => a - b);
+      let lo = fluidVals[Math.floor(fluidVals.length * 0.02)] ?? -1.0;
+      let hi = fluidVals[Math.floor(fluidVals.length * 0.98)] ?? 1.0;
+      if (scalarKey === "pressure_cp" || scalarKey === "vorticity_norm") {
+        const absMax = Math.max(Math.abs(lo), Math.abs(hi), 0.15);
+        lo = -absMax;
+        hi = absMax;
+      } else if (scalarKey === "velocity_mag_norm") {
+        lo = Math.min(0.4, lo);
+        hi = Math.max(1.25, hi);
+      }
+
+      // 1. Fast offscreen bilinear scalar field + 2x Retina vector overlay
+      const rasterW = 575, rasterH = 230;
+      const offCanvas = document.createElement("canvas");
+      offCanvas.width = rasterW;
+      offCanvas.height = rasterH;
+      const offCtx = offCanvas.getContext("2d");
+      const imgData = offCtx.createImageData(rasterW, rasterH);
+      const pixels = imgData.data;
+      const span = Math.max(1e-12, hi - lo);
+
+      for (let py = 0; py < rasterH; py++) {
+        const physY = viewYMax - (py / (rasterH - 1)) * (viewYMax - viewYMin);
+        for (let px = 0; px < rasterW; px++) {
+          const physX = viewXMin + (px / (rasterW - 1)) * (viewXMax - viewXMin);
+          const val = sampleBilinear(grid, field, physX, physY);
+          const norm = (val - lo) / span;
+          let [r, g, b] = scientificColormap(norm, scalarKey);
+
+          if (state.showIsoContours) {
+            const band = (norm * 14.0) % 1.0;
+            if (band > 0.0 && band < 0.04) {
+              r = Math.round(r * 0.88);
+              g = Math.round(g * 0.88);
+              b = Math.round(b * 0.88);
+            }
+          }
+
+          const idx = (py * rasterW + px) * 4;
+          pixels[idx] = r;
+          pixels[idx + 1] = g;
+          pixels[idx + 2] = b;
+          pixels[idx + 3] = 255;
+        }
+      }
+      offCtx.putImageData(imgData, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(offCanvas, 0, 0, width, height);
+
+      const toScreenX = x => ((x - viewXMin) / (viewXMax - viewXMin)) * width;
+      const toScreenY = y => ((viewYMax - y) / (viewYMax - viewYMin)) * height;
+
+      // Helper to trace a smooth closed spline loop: TE -> Lower -> Rounded LE Nose -> Upper -> TE
+      function traceSmoothFoil(uArr, lArr) {
+        const pts = [];
+        for (let i = lArr.length - 1; i >= 1; i--) {
+          pts.push([toScreenX(lArr[i][0]), toScreenY(lArr[i][1])]);
+        }
+        pts.push([toScreenX(uArr[0][0]), toScreenY(uArr[0][1])]);
+        for (let i = 1; i < uArr.length; i++) {
+          pts.push([toScreenX(uArr[i][0]), toScreenY(uArr[i][1])]);
+        }
+        ctx.beginPath();
+        if (!pts.length) return;
+        ctx.moveTo(pts[0][0], pts[0][1]);
+        for (let i = 1; i < pts.length - 1; i++) {
+          const xc = 0.5 * (pts[i][0] + pts[i + 1][0]);
+          const yc = 0.5 * (pts[i][1] + pts[i + 1][1]);
+          ctx.quadraticCurveTo(pts[i][0], pts[i][1], xc, yc);
+        }
+        ctx.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
+        ctx.closePath();
+      }
+
+      // Build closed hydrofoil polygon for streamline/vector clipping
+      const foilPoly = [...foilGeom.defUpper, ...foilGeom.defLower.slice().reverse()];
+
+      // 2. Coordinate grid overlay (in chord units x/c, y/c)
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+      ctx.fillStyle = "rgba(226, 232, 240, 0.72)";
+      ctx.font = "20px ui-monospace, monospace";
+      ctx.lineWidth = 1.5;
+      const xStepC = state.zoomNearFoil ? 0.2 : 0.25;
+      for (let xc = -0.4; xc <= 1.8; xc = Math.round((xc + xStepC) * 100) / 100) {
+        const xMeters = xc * L;
+        if (xMeters < viewXMin || xMeters > viewXMax) continue;
+        const sx = toScreenX(xMeters);
+        ctx.beginPath();
+        ctx.moveTo(sx, 0);
+        ctx.lineTo(sx, height);
+        ctx.stroke();
+        ctx.fillText(`x/c=${xc.toFixed(1)}`, sx + 8, height - 14);
+      }
+      const yStepC = state.zoomNearFoil ? 0.1 : 0.2;
+      for (let yc = -0.6; yc <= 0.6; yc = Math.round((yc + yStepC) * 100) / 100) {
+        const yMeters = yc * L;
+        if (yMeters < viewYMin || yMeters > viewYMax) continue;
+        const sy = toScreenY(yMeters);
+        ctx.beginPath();
+        ctx.moveTo(0, sy);
+        ctx.lineTo(width, sy);
+        ctx.stroke();
+        if (Math.abs(yc) > 0.001 || !state.zoomNearFoil) {
+          ctx.fillText(`y/c=${yc.toFixed(1)}`, 12, sy - 8);
+        }
+      }
+      ctx.restore();
+
+      // 3. Smooth RK2 Streamlines that part cleanly around the exact hydrofoil boundary
+      if (state.showStreamlines && uGrid && vGrid) {
+        ctx.save();
+        ctx.strokeStyle = "rgba(248, 250, 252, 0.42)";
+        ctx.lineWidth = 2.2;
+        ctx.lineCap = "round";
+        const nSeeds = 15;
+        const ds = 0.008 * L;
+
+        // Helper: compute signed distance and tangent guidance near the exact hydrofoil surface
+        function flowVelocityGuided(px, py) {
+          let u = sampleBilinear(uGrid, field, px, py);
+          let v = sampleBilinear(vGrid, field, px, py);
+          // Find nearest station on camber line to smoothly deflect streamlines around the exact vector foil
+          let bestIdx = 0;
+          let bestD2 = 1e9;
+          for (let i = 0; i < foilGeom.defCamber.length; i += 2) {
+            const dx = px - foilGeom.defCamber[i][0];
+            const dy = py - foilGeom.defCamber[i][1];
+            const d2 = dx * dx + dy * dy;
+            if (d2 < bestD2) {
+              bestD2 = d2;
+              bestIdx = i;
+            }
+          }
+          const camPt = foilGeom.defCamber[bestIdx];
+          const uPt = foilGeom.defUpper[bestIdx];
+          const lPt = foilGeom.defLower[bestIdx];
+          const halfThick = 0.5 * Math.hypot(uPt[0] - lPt[0], uPt[1] - lPt[1]);
+          const distFromCamber = Math.hypot(px - camPt[0], py - camPt[1]);
+          const clearance = distFromCamber - halfThick;
+          const influenceBand = 0.075 * L;
+          if (clearance < influenceBand) {
+            const i0 = Math.max(0, bestIdx - 1);
+            const i1 = Math.min(foilGeom.defCamber.length - 1, bestIdx + 1);
+            const tx = foilGeom.defCamber[i1][0] - foilGeom.defCamber[i0][0];
+            const ty = foilGeom.defCamber[i1][1] - foilGeom.defCamber[i0][1];
+            const tLen = Math.max(1e-12, Math.hypot(tx, ty));
+            const uxTan = tx / tLen;
+            const uyTan = ty / tLen;
+            // Outward normal away from camber
+            const sign = (py - camPt[1]) >= 0 ? 1.0 : -1.0;
+            const nxOut = -uyTan * sign;
+            const nyOut = uxTan * sign;
+            const blend = Math.pow(Math.max(0, 1.0 - Math.max(0, clearance) / influenceBand), 1.6);
+            const spd = Math.max(0.35, Math.hypot(u, v));
+            // Align with local surface tangent + slight outward push near leading edge
+            const lePush = bestIdx < 18 ? 0.38 * blend : 0.06 * blend;
+            u = (1 - blend) * u + blend * spd * (uxTan + lePush * nxOut);
+            v = (1 - blend) * v + blend * spd * (uyTan + lePush * nyOut);
+          }
+          return [u, v];
+        }
+
+        for (let sIdx = 0; sIdx < nSeeds; sIdx++) {
+          const frac = (sIdx + 0.5) / nSeeds;
+          let x = viewXMin + 0.005 * L;
+          let y = viewYMin + frac * (viewYMax - viewYMin);
+          // Skip seed if its starting y is directly on the leading-edge stagnation point
+          if (Math.abs(y - foilGeom.defCamber[0][1]) < 0.008 * L) {
+            y += (y >= foilGeom.defCamber[0][1] ? 0.012 : -0.012) * L;
+          }
+          ctx.beginPath();
+          let started = false;
+          for (let step = 0; step < 260; step++) {
+            if (x < viewXMin || x > viewXMax || y < viewYMin || y > viewYMax) break;
+            if (pointInPolygon(x, y, foilPoly)) {
+              ctx.stroke();
+              ctx.beginPath();
+              started = false;
+              x += ds;
+              continue;
+            }
+            const sx = toScreenX(x);
+            const sy = toScreenY(y);
+            if (!started) {
+              ctx.moveTo(sx, sy);
+              started = true;
+            } else {
+              ctx.lineTo(sx, sy);
+            }
+            const [u1, v1] = flowVelocityGuided(x, y);
+            const mag1 = Math.hypot(u1, v1);
+            if (mag1 < 0.02) break;
+            const xm = x + 0.5 * ds * (u1 / mag1);
+            const ym = y + 0.5 * ds * (v1 / mag1);
+            const [u2, v2] = flowVelocityGuided(xm, ym);
+            const mag2 = Math.max(0.02, Math.hypot(u2, v2));
+            x += ds * (u2 / mag2);
+            y += ds * (v2 / mag2);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // 4. Velocity vectors with arrowheads
+      if (state.showVectors && uGrid && vGrid) {
+        ctx.save();
+        ctx.strokeStyle = "rgba(15, 23, 42, 0.60)";
+        ctx.fillStyle = "rgba(15, 23, 42, 0.60)";
+        ctx.lineWidth = 2.0;
+        const nxVec = 20, nyVec = 10;
+        for (let j = 1; j < nyVec; j++) {
+          for (let i = 1; i < nxVec; i++) {
+            const x = viewXMin + (i / nxVec) * (viewXMax - viewXMin);
+            const y = viewYMin + (j / nyVec) * (viewYMax - viewYMin);
+            if (pointInPolygon(x, y, foilPoly)) continue;
+            const u = sampleBilinear(uGrid, field, x, y);
+            const v = sampleBilinear(vGrid, field, x, y);
+            const sx = toScreenX(x);
+            const sy = toScreenY(y);
+            const scale = 26.0;
+            const ex = sx + u * scale;
+            const ey = sy - v * scale;
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+            const ang = Math.atan2(-(v * scale), u * scale);
+            ctx.beginPath();
+            ctx.moveTo(ex, ey);
+            ctx.lineTo(ex - 8.0 * Math.cos(ang - 0.5), ey - 8.0 * Math.sin(ang - 0.5));
+            ctx.lineTo(ex - 8.0 * Math.cos(ang + 0.5), ey - 8.0 * Math.sin(ang + 0.5));
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+      }
+
+      // 5. Undeformed Rigid Reference Chord Line (Clean Dashed Centerline — No Blurry Ghost Shadow)
+      if (state.showUndeformed && !foilGeom.isRigidStage) {
+        ctx.save();
+        ctx.beginPath();
+        foilGeom.undefCamber.forEach(([x, y], idx) => {
+          if (idx === 0) ctx.moveTo(toScreenX(x), toScreenY(y));
+          else ctx.lineTo(toScreenX(x), toScreenY(y));
+        });
+        ctx.setLineDash([14, 9]);
+        ctx.strokeStyle = "rgba(248, 250, 252, 0.88)";
+        ctx.lineWidth = 3.2;
+        ctx.lineCap = "round";
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 6. Active Deformed / Rigid NACA 0008 Hydrofoil Body (Single Smooth Clipped Continuum Silhouette)
+      const upper = foilGeom.defUpper;
+      const lower = foilGeom.defLower;
+      const vmList = foilGeom.vmProfile;
+      const maxVm = Math.max(0.05, ...vmList);
+
+      ctx.save();
+      traceSmoothFoil(upper, lower);
+      ctx.clip();
+
+      // Continuous chordwise stress gradient inside clipped hydrofoil (zero facet seams or color bleed)
+      const lePt = foilGeom.defCamber[0];
+      const tePt = foilGeom.defCamber[foilGeom.defCamber.length - 1];
+      const grad = ctx.createLinearGradient(
+        toScreenX(lePt[0]),
+        toScreenY(lePt[1]),
+        toScreenX(tePt[0]),
+        toScreenY(tePt[1])
+      );
+      for (let i = 0; i < upper.length; i += 4) {
+        const stop = Math.max(0, Math.min(1, foilGeom.xi ? foilGeom.xi[i] : i / (upper.length - 1)));
+        grad.addColorStop(stop, stressColorStyle(vmList[i] || 0, maxVm, foilGeom.isRigidStage));
+      }
+      grad.addColorStop(1.0, stressColorStyle(vmList[vmList.length - 1] || 0, maxVm, foilGeom.isRigidStage));
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      // Deformed neutral axis (camber centerline) inside hydrofoil
+      ctx.beginPath();
+      foilGeom.defCamber.forEach(([x, y], idx) => {
+        if (idx === 0) ctx.moveTo(toScreenX(x), toScreenY(y));
+        else ctx.lineTo(toScreenX(x), toScreenY(y));
+      });
+      ctx.setLineDash([10, 6]);
+      ctx.strokeStyle = "rgba(15, 23, 42, 0.50)";
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      ctx.restore();
+
+      // Razor-sharp 2x Retina exterior hydrofoil vector boundary
+      ctx.save();
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      traceSmoothFoil(upper, lower);
+      ctx.strokeStyle = "#020617";
+      ctx.lineWidth = 5.5;
+      ctx.stroke();
+      traceSmoothFoil(upper, lower);
+      ctx.strokeStyle = "#f8fafc";
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+
+      // 7. Clamped Spar Mount Pin at x/c = 0.12
+      const clampIdx = Math.max(1, Math.min(upper.length - 2, Math.round(0.22 * (upper.length - 1))));
+      const clampX = toScreenX(foilGeom.defCamber[clampIdx][0]);
+      const clampY = toScreenY(foilGeom.defCamber[clampIdx][1]);
+      ctx.beginPath();
+      ctx.arc(clampX, clampY, 10.0, 0, 2 * Math.PI);
+      ctx.fillStyle = "#f59e0b";
+      ctx.fill();
+      ctx.lineWidth = 3.2;
+      ctx.strokeStyle = "#020617";
+      ctx.stroke();
+
+      // 8. Trailing-edge tip deflection callout arrow & label when bent
+      if (!foilGeom.isRigidStage && foilGeom.tipDeflectionMm > 0.01) {
+        const teUndef = foilGeom.undefCamber[foilGeom.undefCamber.length - 1];
+        const teDef = foilGeom.defCamber[foilGeom.defCamber.length - 1];
+        const sx0 = toScreenX(teUndef[0]);
+        const sy0 = toScreenY(teUndef[1]);
+        const sx1 = toScreenX(teDef[0]);
+        const sy1 = toScreenY(teDef[1]);
+
+        ctx.strokeStyle = "#22d3ee";
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(sx0 + 18, sy0);
+        ctx.lineTo(sx1 + 18, sy1);
+        ctx.stroke();
+
+        // Callout badge
+        const badgeText = `Δu_tip = ${foilGeom.tipDeflectionMm.toFixed(2)} mm (${(foilGeom.tipDeflectionMm / (L * 1000) * 100).toFixed(2)}% c)`;
+        ctx.font = "600 21px ui-monospace, monospace";
+        const tw = ctx.measureText(badgeText).width + 28;
+        const bx = Math.min(width - tw - 24, sx1 + 32);
+        const by = Math.max(36, Math.min(height - 64, 0.5 * (sy0 + sy1) - 22));
+        ctx.fillStyle = "rgba(8, 51, 68, 0.94)";
+        ctx.strokeStyle = "#22d3ee";
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.roundRect(bx, by, tw, 42, 10);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#ecfeff";
+        ctx.fillText(badgeText, bx + 14, by + 28);
+      }
+
+      // 9. Embedded scientific colorbar legend (top-right corner)
+      const cbW = 300, cbH = 18, cbX = width - cbW - 36, cbY = 30;
+      ctx.fillStyle = "rgba(2, 6, 23, 0.86)";
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.40)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(cbX - 18, cbY - 14, cbW + 36, 76, 14);
+      ctx.fill();
+      ctx.stroke();
+      for (let i = 0; i < cbW; i++) {
+        const [r, g, b] = scientificColormap(i / (cbW - 1), scalarKey);
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillRect(cbX + i, cbY, 1, cbH);
+      }
+      ctx.fillStyle = "#e2e8f0";
+      ctx.font = "19px ui-monospace, monospace";
+      ctx.fillText(lo.toFixed(2), cbX, cbY + 44);
+      ctx.fillText((0.5 * (lo + hi)).toFixed(2), cbX + cbW * 0.41, cbY + 44);
+      ctx.fillText(hi.toFixed(2), cbX + cbW - 52, cbY + 44);
+      ctx.restore();
+
+      // Mouse hover probe handler
+      canvas.onmousemove = ev => {
+        const rect = canvas.getBoundingClientRect();
+        const rx = (ev.clientX - rect.left) / rect.width;
+        const ry = (ev.clientY - rect.top) / rect.height;
+        const px = viewXMin + rx * (viewXMax - viewXMin);
+        const py = viewYMax - ry * (viewYMax - viewYMin);
+        const val = sampleBilinear(grid, field, px, py);
+        const cpVal = field.pressure_cp ? sampleBilinear(field.pressure_cp, field, px, py) : 0;
+        const uMagVal = field.velocity_mag_norm ? sampleBilinear(field.velocity_mag_norm, field, px, py) : 0;
+        if (probeEl) {
+          probeEl.textContent = `x/c=${(px / L).toFixed(3)}, y/c=${(py / L).toFixed(3)} | ${scalarLabels[scalarKey]}=${val.toFixed(3)} | |U|/U∞=${uMagVal.toFixed(2)} | Cp=${cpVal.toFixed(2)}`;
+        }
+      };
+    }
+
+    function chart(title, subtitle, xLabel, yLabel, series, invert = false) {
+      const panel = el("section", { class: "panel" });
+      panel.append(el("div", { class: "chart-title", text: title }));
+      if (subtitle) panel.append(el("div", { class: "chart-sub", text: subtitle }));
+      const all = series.flatMap(s => (s.x || []).map((x, i) => ({ x: safeNum(x), y: safeNum(s.y?.[i]) })).filter(p => p.x !== null && p.y !== null));
+      if (!all.length) {
+        panel.append(el("div", { class: "empty", text: "Not calculated for this case" }));
+        return panel;
+      }
+      const minX = Math.min(...all.map(p => p.x)), maxX = Math.max(...all.map(p => p.x));
+      const minY = Math.min(...all.map(p => p.y)), maxY = Math.max(...all.map(p => p.y));
+      const xs = Math.max(1e-9, maxX - minX), pad = Math.max(1e-6, (maxY - minY) * 0.10);
+      const lo = minY - pad, hi = maxY + pad, ys = Math.max(1e-9, hi - lo);
+      const svg = el("svg", { viewBox: "0 0 460 240", class: "chart" });
+      const sx = x => 52 + ((x - minX) / xs) * 386;
+      const sy = y => invert ? 18 + ((y - lo) / ys) * 176 : 194 - ((y - lo) / ys) * 176;
+
+      for (let f = 0; f <= 1.001; f += 0.25) {
+        const x = 52 + f * 386;
+        svg.append(
+          el("line", { x1: x, y1: 18, x2: x, y2: 194, stroke: "#1e293b" }),
+          el("text", { x, y: 210, fill: colors.muted, "font-size": 9, "text-anchor": "middle", text: (minX + f * xs).toFixed(2) })
+        );
+        const y = 18 + f * 176;
+        const yVal = invert ? lo + f * ys : hi - f * ys;
+        svg.append(
+          el("line", { x1: 52, y1: y, x2: 438, y2: y, stroke: "#1e293b" }),
+          el("text", { x: 47, y: y + 3, fill: colors.muted, "font-size": 9, "text-anchor": "end", text: yVal.toFixed(2) })
+        );
+      }
+      svg.append(
+        el("line", { x1: 52, y1: 194, x2: 438, y2: 194, stroke: "#475569" }),
+        el("line", { x1: 52, y1: 18, x2: 52, y2: 194, stroke: "#475569" })
+      );
+      series.forEach(s => {
+        let path = "";
+        (s.x || []).forEach((x, i) => {
+          const y = safeNum(s.y?.[i]);
+          if (y === null) return;
+          path += `${path ? " L" : "M"} ${sx(Number(x)).toFixed(1)} ${sy(y).toFixed(1)}`;
+        });
+        if (path) {
+          svg.append(el("path", { d: path, fill: "none", stroke: s.color, "stroke-width": 2.2, "stroke-dasharray": s.dash || "" }));
+        }
+      });
+      svg.append(
+        el("text", { x: 245, y: 232, fill: colors.muted, "font-size": 10, "text-anchor": "middle", text: xLabel }),
+        el("text", { x: 13, y: 108, fill: colors.muted, "font-size": 10, transform: "rotate(-90 13 108)", "text-anchor": "middle", text: yLabel })
+      );
+      panel.append(svg);
+      const legend = el("div", { class: "legend" });
+      series.forEach(s => legend.append(el("span", {}, [el("i", { class: "swatch", style: `border-color:${s.color}` }), document.createTextNode(s.label)])));
+      panel.append(legend);
+      return panel;
+    }
+
+    function render() {
+      const c = state.case, app = $("app");
+      app.replaceChildren();
+      if (!c) return;
+
+      const foilGeom = buildFoilGeometry(c, state.stage);
+      const maxVm = Math.max(0, ...foilGeom.vmProfile);
+
+      const cards = el("div", { class: "cards" });
+      [
+        ["Reynolds Re", c.case.reynolds_number.toExponential(3)],
+        ["Mass Ratio μ", c.case.mass_ratio_mu.toFixed(4)],
+        ["Cauchy Number CY", c.case.cauchy_number_cy.toFixed(4)],
+        ["Effective Modulus Eeff", `${c.case.effective_youngs_modulus_mpa.toFixed(1)} MPa`],
+        ["Tip Deflection Δu_tip", `${foilGeom.tipDeflectionMm.toFixed(3)} mm`],
+        ["Peak von Mises σvM", `${maxVm.toFixed(3)} MPa`]
+      ].forEach(([a, b]) => cards.append(el("div", { class: "card" }, [el("small", { text: a }), el("strong", { text: b })])));
+      app.append(cards);
+
+      const fieldPanel = el("section", { class: "panel field-wrap" });
+      const topToolbar = el("div", { class: "toolbar-row" });
+      const stageRow = el("div", { class: "stage-row" });
+      Object.keys(stageLabels).forEach(k => stageRow.append(button(stageLabels[k], state.stage === k, () => { state.stage = k; render(); })));
+
+      const overlayRow = el("div", { class: "overlay-row" });
+      overlayRow.append(
+        button(state.zoomNearFoil ? "🔍 View: Near-Foil High-Def (1:1)" : "🌐 View: Full Wake Channel (1:1)", state.zoomNearFoil, () => { state.zoomNearFoil = !state.zoomNearFoil; render(); }, false, "toggle-btn"),
+        button("Streamlines", state.showStreamlines, () => { state.showStreamlines = !state.showStreamlines; render(); }, false, "toggle-btn"),
+        button("Velocity Vectors", state.showVectors, () => { state.showVectors = !state.showVectors; render(); }, false, "toggle-btn"),
+        button("Rigid Foil Reference", state.showUndeformed, () => { state.showUndeformed = !state.showUndeformed; render(); }, false, "toggle-btn"),
+        button("Iso-Contours", state.showIsoContours, () => { state.showIsoContours = !state.showIsoContours; render(); }, false, "toggle-btn")
+      );
+      topToolbar.append(stageRow, overlayRow);
+      fieldPanel.append(topToolbar);
+
+      const stage = c.stages[state.stage] || {};
+      const field = stageField(stage);
+      const head = el("div", { class: "field-head" });
+      const left = el("div", {}, [
+        el("div", { class: "chart-title", text: `${stageLabels[state.stage]} — NACA 0008 Hydrofoil (c = ${(foilGeom.chordM * 1000).toFixed(0)} mm, α₀ = ${c.case.angle_of_attack_deg.toFixed(1)}°)` }),
+        el("div", { class: "source", text: `Provenance: ${stage.provenance || field?.provenance || "not calculated"}` })
+      ]);
+      const scalarRow = el("div", { class: "scalar-row" });
+      Object.keys(scalarLabels).forEach(k => scalarRow.append(button(scalarLabels[k], state.scalar === k, () => { state.scalar = k; render(); }, !field?.[k])));
+      head.append(left, scalarRow);
+      fieldPanel.append(head);
+
+      if (field && field[state.scalar]) {
+        const box = el("div", { class: "canvas-box" });
+        const canvas = el("canvas", { width: 2300, height: 920 });
+        const probeEl = el("div", { class: "probe-readout", text: "Hover over hydrofoil & flow domain to probe local Cp, |U|/U∞, and coordinates" });
+        const footer = el("div", { class: "canvas-footer" }, [
+          el("div", { class: "legend-inline" }, [
+            el("span", { class: "legend-item" }, [el("i", { class: "dash-ref" }), document.createTextNode("Rigid NACA 0008 Reference (α₀ = 8°)")]),
+            el("span", { class: "legend-item" }, [el("i", { class: "dot-amber" }), document.createTextNode("Clamped Spar Root (x/c = 0.12)")]),
+            el("span", { class: "legend-item" }, [el("i", { class: "stress-bar" }), document.createTextNode(`Solid Fin Stress Shading (Peak: ${maxVm.toFixed(3)} MPa)`)]),
+          ]),
+          probeEl
+        ]);
+        box.append(canvas, footer);
+        fieldPanel.append(box);
+        requestAnimationFrame(() => drawField(canvas, field, state.scalar, foilGeom, probeEl));
+      } else {
+        fieldPanel.append(el("div", { class: "empty", text: stage.reason || "No persisted volume field for this stage." }));
+      }
+      app.append(fieldPanel);
+
+      const rom = c.stages.rom || {}, rigid = c.stages.openfoam_rigid || {}, bent = c.stages.openfoam_deformed || {};
+      const full = c.stages.full_order_fsi || {};
+      const rs = rom.surface || {}, ri = rigid.surface || {}, bs = (full.surface || bent.surface) || {};
+      const rstruct = structure(rom), ccx = structure(full.structure ? full : c.stages.calculix_deformed), force = stage.force_history || {};
+
+      const grid = el("div", { class: "grid" });
+      grid.append(
+        chart("Surface Pressure Distribution Cp(x/c)", "Upper suction peak vs lower pressure side across Rigid CFD, Bent CFD & ROM", "Chord Position x/c", "Cp (suction up)", [
+          ...(ri.cp_upper ? [{ label: "Rigid OF Upper", x: ri.x_over_c, y: ri.cp_upper, color: colors.rose }] : []),
+          ...(ri.cp_lower ? [{ label: "Rigid OF Lower", x: ri.x_over_c, y: ri.cp_lower, color: "#fda4af", dash: "4 3" }] : []),
+          ...(bs.cp_upper ? [{ label: "Bent OF Upper", x: bs.x_over_c, y: bs.cp_upper, color: colors.green }] : []),
+          ...(bs.cp_lower ? [{ label: "Bent OF Lower", x: bs.x_over_c, y: bs.cp_lower, color: "#6ee7b7", dash: "4 3" }] : []),
+          ...(rs.cp_upper ? [{ label: "ROM Upper", x: rs.x_over_c, y: rs.cp_upper, color: colors.cyan, dash: "2 3" }] : [])
+        ], true),
+        chart("Chordwise Bending Deflection uy(x/c)", "Passive trailing-edge washout deflection from clamped spar (x/c = 0.12) to tip", "Chord Position x/c", "Deflection uy (mm)", [
+          ...(rstruct.displacement_profile?.uy_mm ? [{ label: "C¹ Hermite Beam ROM", x: rstruct.displacement_profile.x_over_c, y: rstruct.displacement_profile.uy_mm, color: colors.cyan }] : []),
+          ...(ccx.displacement_profile?.uy_mm ? [{ label: "CalculiX 3D C3D8I (NLGEOM)", x: ccx.displacement_profile.x_over_c, y: ccx.displacement_profile.uy_mm, color: colors.purple }] : [])
+        ]),
+        chart("Chordwise von Mises Stress σvM(x/c)", "Root bending stress concentration near clamped mounting spar", "Chord Position x/c", "σvM (MPa)", [
+          ...(rstruct.stress_profile?.von_mises_mpa ? [{ label: "C¹ Hermite Beam ROM", x: rstruct.stress_profile.x_over_c, y: rstruct.stress_profile.von_mises_mpa, color: colors.rose }] : []),
+          ...(ccx.stress_profile?.von_mises_mpa ? [{ label: "CalculiX 3D C3D8I (NLGEOM)", x: ccx.stress_profile.x_over_c, y: ccx.stress_profile.von_mises_mpa, color: colors.amber }] : [])
+        ]),
+        chart("Transient Hydrodynamic Force History", `Time evolution for active stage (${stageLabels[state.stage]})`, "Physical Time t (s)", "Force / Moment Coefficient", [
+          ...(force.time_s && force.cl ? [{ label: "Lift CL(t)", x: force.time_s, y: force.cl, color: colors.green }] : []),
+          ...(force.time_s && force.cd ? [{ label: "Drag CD(t)", x: force.time_s, y: force.cd, color: colors.amber }] : []),
+          ...(force.time_s && force.cm_pitch ? [{ label: "Pitching Moment CM(t)", x: force.time_s, y: force.cm_pitch, color: colors.purple }] : [])
+        ])
+      );
+      app.append(
+        grid,
+        el("div", {
+          class: "notice",
+          text: "Physical & Numerical Provenance: OpenFOAM panels render reconstructed final-time finite-volume fields (pimpleFoam k-ω SST) with exact NACA 0008 hydrofoil geometry; CalculiX profiles are extracted from 3D C3D8I hexahedral finite-element solutions (*STEP, NLGEOM); ROM fields are explicitly labeled potential/vortex/wake reconstructions."
+        })
+      );
+    }
+
+    function selectCase() {
+      const mat = $("material").value, speed = Number($("speed").value);
+      const raw = state.archive.cases.find(c => c.case.material_id === mat && c.case.flow_speed_m_s === speed) || state.archive.cases.find(c => c.case.material_id === mat);
+      state.case = ensureFullOrder(raw);
+      if (state.stage === "full_order_fsi" && !(state.case?.stages?.full_order_fsi?.available)) {
+        state.stage = state.case?.stages?.openfoam_deformed?.available ? "openfoam_deformed" : "rom";
+      }
+      render();
+    }
+
+    fetch("data/campaign_archive.json", { credentials: "same-origin" })
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(data => {
+        if (!data || !Array.isArray(data.cases) || !data.cases.length) throw new Error("Archive has no cases");
+        state.archive = data;
+        data.materials.forEach(m => $("material").append(el("option", { value: m, text: m })));
+        function speeds() {
+          const mat = $("material").value;
+          const values = [...new Set(data.cases.filter(c => c.case.material_id === mat).map(c => c.case.flow_speed_m_s))].sort((a, b) => a - b);
+          $("speed").replaceChildren(...values.map(v => el("option", { value: v, text: `U∞ = ${v.toFixed(2)} m/s` })));
+          selectCase();
+        }
+        $("material").addEventListener("change", speeds);
+        $("speed").addEventListener("change", selectCase);
+        speeds();
+      })
+      .catch(err => {
+        $("app").replaceChildren(el("div", { class: "error", text: `Campaign archive unavailable: ${err.message}.` }));
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+{
+  "case": {
+    "chord_m": 0.1,
+    "max_thickness_ratio": 0.08,
+    "span_m": 0.18,
+    "flow_speed_m_s": 1.2,
+    "angle_of_attack_deg": 8.0,
+    "fluid_density_kg_m3": 998.2,
+    "fluid_kinematic_viscosity_m2_s": 1.004e-06,
+    "material_id": "tpu_95a",
+    "print_orientation": "flat",
+    "infill_fraction": 1.0,
+    "is_3d": false,
+    "total_time_s": 0.5,
+    "n_steps": 80,
+    "root_mount_fraction": 0.12
+  },
+  "dimensionless": {
+    "reynolds_number": 119521.9123505976,
+    "mass_ratio_mu": 0.06643532758966138,
+    "bending_rigidity_kb": 0.48915749621668264,
+    "cauchy_number_cy": 2.0443313405893893,
+    "reduced_velocity_ur": 2.5132560587185893,
+    "f1_vacuum_hz": 19.423863268200826,
+    "f1_water_hz": 5.425775694067672,
+    "added_mass_factor": 3.579923749785327,
+    "skin_friction_cf": 0.0050817596033093815,
+    "wall_shear_stress_pa": 3.6522809539368657,
+    "friction_velocity_u_tau": 0.060488568460352526,
+    "first_cell_height_m": 1.6598177565701125e-05,
+    "target_y_plus": 1.0,
+    "recommended_dt_s": 0.000667,
+    "flow_regime": "Fully Turbulent (URANS)",
+    "turbulence_model": "kOmegaSST",
+    "structural_regime": "Moderate-to-Large Elastic Bending (FSI Active)",
+    "added_mass_severity": "Critical (mu < 0.08: Added Mass Dominates Inertia)",
+    "recommended_coupling_scheme": "serial-implicit + IQN-ILS (Aitken/Quasi-Newton)",
+    "recommended_initial_relaxation": 0.05,
+    "flutter_risk": "Moderate (Dynamic oscillations amplified by vortex shedding)",
+    "warnings": [
+      "Low mass ratio (mu = 0.066): water added mass is 11.8x the fin's structural mass. Explicit coupling will diverge in 1-2 steps; preCICE IQN-ILS with initial relaxation <= 0.08 is enforced."
+    ]
+  },
+  "rom": {
+    "wall_s": 0.507,
+    "cl": 0.6877,
+    "cd": 0.043,
+    "cm": -0.1683,
+    "tip_deflection_mm": 2.53,
+    "tip_deflection_pct_chord": 2.592,
+    "von_mises_mpa": 0.195,
+    "alpha_eff_deg": 6.59,
+    "avg_iqn_iterations": 3.0,
+    "lift_to_drag": 15.993
+  },
+  "industrial_rigid": {
+    "executed": true,
+    "execution_mode": "host_industrial_binaries",
+    "solver_versions": {
+      "openfoam": "OpenFOAM v1912/2204 (Native C++ Finite-Volume CFD)",
+      "precice": "libprecice3 v3.1.2 (Native C++ IQN-ILS Coupling)",
+      "calculix": "CalculiX CrunchiX 2.17 (Native C/Fortran NLGEOM FEA, 8 threads)",
+      "gmsh": "Gmsh 4.8.4 (OpenCASCADE 3D/2D Unstructured Mesher)"
+    },
+    "stages_completed": [
+      "preCICE v3 XML Validation (precice-tools check)",
+      "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+      "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+      "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+      "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+    ],
+    "wall_time_ms": 758516.1,
+    "ccx_max_displacement_m": 0.0024,
+    "ccx_max_von_mises_mpa": 0.146,
+    "openfoam_cells": 15592,
+    "precice_xml_valid": true,
+    "openfoam_cl": 0.9302,
+    "openfoam_cd": 0.114,
+    "openfoam_cm": -0.2798,
+    "openfoam_cl_mean": 0.9301,
+    "mpi_ranks": 1,
+    "ccx_disp_from_openfoam_cl_m": 0.003246,
+    "ccx_vm_from_openfoam_cl_mpa": 0.197,
+    "label": "rigid_naca",
+    "workspace": "/home/dev/MTP/sim_workspaces/92243f61-342e-4d50-9ca0-143dcc2d00b0/rigid",
+    "log_keys": [
+      "logs/1_precice_check.log",
+      "logs/2_gmsh_mesher.log",
+      "logs/3_openfoam_checkMesh.log",
+      "logs/4_openfoam_pimpleFoam.log",
+      "logs/5_calculix_ccx.log",
+      "logs/5b_calculix_ccx_from_openfoam_cl.log"
+    ]
+  },
+  "industrial_deformed": {
+    "executed": true,
+    "execution_mode": "host_industrial_binaries",
+    "solver_versions": {
+      "openfoam": "OpenFOAM v1912/2204 (Native C++ Finite-Volume CFD)",
+      "precice": "libprecice3 v3.1.2 (Native C++ IQN-ILS Coupling)",
+      "calculix": "CalculiX CrunchiX 2.17 (Native C/Fortran NLGEOM FEA, 8 threads)",
+      "gmsh": "Gmsh 4.8.4 (OpenCASCADE 3D/2D Unstructured Mesher)"
+    },
+    "stages_completed": [
+      "preCICE v3 XML Validation (precice-tools check)",
+      "Gmsh Parametric Hydrofoil Meshing (gmsh -3)",
+      "OpenFOAM polyMesh Conversion & Verification (gmshToFoam + checkMesh)",
+      "OpenFOAM Navier-Stokes CFD Solve (pimpleFoam)",
+      "CalculiX Nonlinear FEA Structural Solve (ccx NLGEOM C3D8I)"
+    ],
+    "wall_time_ms": 587561.3,
+    "ccx_max_displacement_m": 0.0024,
+    "ccx_max_von_mises_mpa": 0.146,
+    "openfoam_cells": 16083,
+    "precice_xml_valid": true,
+    "openfoam_cl": 0.6414,
+    "openfoam_cd": 0.0348,
+    "openfoam_cm": -0.1487,
+    "openfoam_cl_mean": 0.6414,
+    "mpi_ranks": 1,
+    "ccx_disp_from_openfoam_cl_m": 0.002239,
+    "ccx_vm_from_openfoam_cl_mpa": 0.136,
+    "label": "rom_deformed_camber",
+    "workspace": "/home/dev/MTP/sim_workspaces/92243f61-342e-4d50-9ca0-143dcc2d00b0/deformed",
+    "log_keys": [
+      "logs/1_precice_check.log",
+      "logs/2_gmsh_mesher.log",
+      "logs/3_openfoam_checkMesh.log",
+      "logs/4_openfoam_pimpleFoam.log",
+      "logs/5_calculix_ccx.log",
+      "logs/5b_calculix_ccx_from_openfoam_cl.log"
+    ]
+  },
+  "match": {
+    "cl_rom_vs_of_rigid_rel_err": 0.2606,
+    "cl_rom_vs_of_deformed_rel_err": 0.0722,
+    "tip_rom_vs_ccx_rom_load_rel_err": 0.0542,
+    "washout_cl_drop_rigid_to_deformed": 0.2887,
+    "pass_cl_deformed_within_25pct": true
+  }
+}
